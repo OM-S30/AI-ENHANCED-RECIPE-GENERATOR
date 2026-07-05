@@ -1,0 +1,4231 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ChefAI – AI-Enhanced Recipe Generator</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;0,700;1,300;1,400;1,600;1,700&family=Outfit:wght@300;400;500;600;700&family=Instrument+Serif:ital@0;1&display=swap"
+    rel="stylesheet">
+    <link rel="stylesheet" href="chefai-feature-fix.css">
+  <style>
+    :root {
+      --cream: #fdf6ee;
+      --warm-white: #fefcf9;
+      --orange: #e85d26;
+      --orange-light: #f47a4a;
+      --orange-deep: #b8421a;
+      --orange-glow: rgba(232, 93, 38, 0.18);
+      --green: #2d6a4f;
+      --green-light: #52b788;
+      --green-pale: #d8f3dc;
+      --brown: #5c3d2e;
+      --brown-light: #a07850;
+      --text-dark: #160e05;
+      --text-mid: #3d2a1a;
+      --text-soft: #8a6e5a;
+      --card-bg: rgba(255, 252, 248, 0.96);
+      --shadow: 0 8px 40px rgba(90, 50, 20, 0.1);
+      --shadow-hover: 0 24px 60px rgba(90, 50, 20, 0.2);
+      --border: rgba(200, 150, 100, 0.14);
+    }
+
+    *,
+    *::before,
+    *::after {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      font-family: 'Outfit', sans-serif;
+      background: var(--cream);
+      color: var(--text-dark);
+      overflow-x: hidden;
+    }
+
+    /* grain overlay */
+    body::after {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.03'/%3E%3C/svg%3E");
+      pointer-events: none;
+      z-index: 9999;
+      opacity: 0.5;
+    }
+
+    /* ─── NAVBAR ─────────────────────────────────────────────── */
+    nav {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 100;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 5vw;
+      height: 68px;
+      background: rgba(10, 5, 2, 0.25);
+      backdrop-filter: blur(24px);
+      -webkit-backdrop-filter: blur(24px);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+      transition: all 0.4s;
+    }
+
+    nav.scrolled {
+      height: 58px;
+      background: rgba(253, 246, 238, 0.92);
+      border-bottom: 1px solid var(--border);
+      box-shadow: 0 4px 30px rgba(90, 50, 20, 0.08);
+    }
+
+    nav.scrolled .nav-links a {
+      color: var(--text-mid);
+    }
+
+    nav.scrolled .nav-links a:hover {
+      color: var(--orange);
+    }
+
+    nav.scrolled .nav-logo-text {
+      color: var(--text-dark);
+    }
+
+    nav.scrolled .hamburger span {
+      background: var(--text-dark);
+    }
+
+    .nav-logo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      text-decoration: none;
+    }
+
+    .nav-logo-icon {
+      width: 36px;
+      height: 36px;
+      background: var(--orange);
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      box-shadow: 0 4px 14px rgba(232, 93, 38, 0.4);
+      transition: transform 0.3s;
+    }
+
+    .nav-logo:hover .nav-logo-icon {
+      transform: rotate(-8deg) scale(1.1);
+    }
+
+    .nav-logo-text {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: rgba(255, 255, 255, 0.92);
+      letter-spacing: -0.02em;
+      transition: color 0.4s;
+    }
+
+    .nav-logo-text span {
+      color: var(--orange);
+    }
+
+    .nav-links {
+      display: flex;
+      align-items: center;
+      gap: 32px;
+    }
+
+    .nav-links a {
+      text-decoration: none;
+      color: rgba(255, 255, 255, 0.75);
+      font-size: 0.88rem;
+      font-weight: 500;
+      position: relative;
+      transition: color 0.3s;
+      letter-spacing: 0.01em;
+    }
+
+    .nav-links a::after {
+      content: '';
+      position: absolute;
+      bottom: -3px;
+      left: 0;
+      width: 0;
+      height: 1.5px;
+      background: var(--orange);
+      transition: width 0.3s;
+    }
+
+    .nav-links a:hover {
+      color: var(--orange);
+    }
+
+    .nav-links a:hover::after {
+      width: 100%;
+    }
+
+    .nav-cta {
+      background: var(--orange);
+      color: white !important;
+      padding: 8px 22px;
+      border-radius: 50px;
+      font-weight: 600 !important;
+      box-shadow: 0 4px 16px rgba(232, 93, 38, 0.3);
+      transition: all 0.3s !important;
+    }
+
+    .nav-cta:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 24px rgba(232, 93, 38, 0.45) !important;
+    }
+
+    .nav-cta::after {
+      display: none !important;
+    }
+
+    .hamburger {
+      display: none;
+      flex-direction: column;
+      gap: 5px;
+      cursor: pointer;
+      padding: 4px;
+    }
+
+    .hamburger span {
+      display: block;
+      width: 24px;
+      height: 2px;
+      background: rgba(255, 255, 255, 0.85);
+      border-radius: 2px;
+      transition: all 0.3s;
+    }
+
+    .hamburger.open span:nth-child(1) {
+      transform: translateY(7px) rotate(45deg);
+    }
+
+    .hamburger.open span:nth-child(2) {
+      opacity: 0;
+      transform: scaleX(0);
+    }
+
+    .hamburger.open span:nth-child(3) {
+      transform: translateY(-7px) rotate(-45deg);
+    }
+
+    /* ─── HERO ───────────────────────────────────────────────── */
+    .hero {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      padding: 100px 5vw 80px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    /* ── VIDEO BACKGROUND ── */
+    .hero-video-bg {
+      position: absolute;
+      inset: 0;
+      z-index: 0;
+      overflow: hidden;
+    }
+
+    .hero-video-bg video {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      object-position: center center;
+      opacity: 1;
+    }
+
+    /* ── VIDEO OVERLAY LAYERS ── */
+    /* Layer 1: dark cinematic base */
+    .hero-video-overlay {
+      position: absolute;
+      inset: 0;
+      z-index: 1;
+      background: rgba(8, 4, 1, 0.55);
+    }
+
+    /* Layer 2: warm gradient tint to reinforce brand */
+    .hero-video-gradient {
+      position: absolute;
+      inset: 0;
+      z-index: 2;
+      background:
+        linear-gradient(160deg,
+          rgba(10, 5, 2, 0.38) 0%,
+          rgba(20, 10, 4, 0.18) 45%,
+          rgba(8, 4, 1, 0.52) 100%),
+        radial-gradient(ellipse 70% 60% at 80% 25%, rgba(232, 93, 38, 0.18) 0%, transparent 65%),
+        radial-gradient(ellipse 50% 60% at 8% 78%, rgba(45, 106, 79, 0.12) 0%, transparent 55%);
+    }
+
+    /* Layer 3: bottom fade to next section */
+    .hero-video-fade {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      z-index: 3;
+      height: 220px;
+      background: linear-gradient(to bottom, transparent, rgba(8, 4, 1, 0.85) 70%, var(--text-dark) 100%);
+    }
+
+    /* Layer 4: grid overlay for tech feel */
+    .hero-video-grid {
+      position: absolute;
+      inset: 0;
+      z-index: 3;
+      pointer-events: none;
+      background-image:
+        linear-gradient(rgba(255, 255, 255, 0.02) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
+      background-size: 56px 56px;
+      -webkit-mask-image: radial-gradient(ellipse 80% 80% at 50% 50%, black 20%, transparent 100%);
+      mask-image: radial-gradient(ellipse 80% 80% at 50% 50%, black 20%, transparent 100%);
+    }
+
+    /* Keep old orbs as accent on top */
+    .hero-orb {
+      position: absolute;
+      border-radius: 50%;
+      filter: blur(80px);
+      pointer-events: none;
+      z-index: 4;
+    }
+
+    .hero-orb.o1 {
+      width: 520px;
+      height: 520px;
+      top: -80px;
+      right: -60px;
+      background: radial-gradient(circle, rgba(232, 93, 38, 0.22), transparent 70%);
+      animation: orbFloat 10s ease-in-out infinite;
+    }
+
+    .hero-orb.o2 {
+      width: 380px;
+      height: 380px;
+      bottom: -40px;
+      left: -60px;
+      background: radial-gradient(circle, rgba(82, 183, 136, 0.12), transparent 70%);
+      animation: orbFloat 12s ease-in-out infinite reverse;
+    }
+
+    .hero-orb.o3 {
+      width: 200px;
+      height: 200px;
+      top: 50%;
+      left: 45%;
+      background: radial-gradient(circle, rgba(232, 93, 38, 0.08), transparent 70%);
+      animation: orbFloat 8s ease-in-out infinite 2s;
+    }
+
+    @keyframes orbFloat {
+
+      0%,
+      100% {
+        transform: translate(0, 0) scale(1)
+      }
+
+      40% {
+        transform: translate(15px, -25px) scale(1.06)
+      }
+
+      70% {
+        transform: translate(-10px, 12px) scale(0.96)
+      }
+    }
+
+    .hero-inner {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 60px;
+      align-items: center;
+      max-width: 1240px;
+      margin: 0 auto;
+      width: 100%;
+      position: relative;
+      z-index: 5;
+    }
+
+    .hero-left {
+      animation: fadeSlideUp 1s cubic-bezier(0.16, 1, 0.3, 1) both;
+    }
+
+    .hero-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(82, 183, 136, 0.12);
+      border: 1px solid rgba(82, 183, 136, 0.32);
+      color: #52b788;
+      padding: 6px 16px;
+      border-radius: 50px;
+      font-size: 0.72rem;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      margin-bottom: 28px;
+      backdrop-filter: blur(8px);
+    }
+
+    .hero-badge-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: #52b788;
+      animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+
+      0%,
+      100% {
+        opacity: 1;
+        transform: scale(1)
+      }
+
+      50% {
+        opacity: 0.4;
+        transform: scale(0.7)
+      }
+    }
+
+    .hero-title {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: clamp(3rem, 5.5vw, 5.4rem);
+      font-weight: 700;
+      line-height: 1.0;
+      color: white;
+      margin-bottom: 24px;
+      letter-spacing: -0.04em;
+      text-shadow: 0 2px 40px rgba(0, 0, 0, 0.6);
+    }
+
+    .hero-title em {
+      font-style: italic;
+      color: var(--orange);
+      position: relative;
+      display: inline-block;
+    }
+
+    .hero-title em::after {
+      content: '';
+      position: absolute;
+      bottom: 4px;
+      left: -2px;
+      right: -2px;
+      height: 2px;
+      background: var(--orange);
+      opacity: 0.3;
+      border-radius: 1px;
+    }
+
+    .hero-title .line-accent {
+      display: block;
+      font-family: 'Instrument Serif', serif;
+      font-style: italic;
+      color: rgba(255, 255, 255, 0.38);
+      font-size: 0.68em;
+    }
+
+    .hero-sub {
+      font-size: 1rem;
+      color: rgba(255, 255, 255, 0.62);
+      line-height: 1.8;
+      max-width: 460px;
+      margin-bottom: 38px;
+      font-weight: 300;
+      text-shadow: 0 1px 20px rgba(0, 0, 0, 0.5);
+    }
+
+    .hero-actions {
+      display: flex;
+      gap: 14px;
+      flex-wrap: wrap;
+    }
+
+    .btn-primary {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      background: var(--orange);
+      color: white;
+      text-decoration: none;
+      padding: 14px 30px;
+      border-radius: 50px;
+      font-size: 0.95rem;
+      font-weight: 600;
+      letter-spacing: 0.01em;
+      box-shadow: 0 6px 24px rgba(232, 93, 38, 0.45);
+      transition: all 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+      border: none;
+      cursor: pointer;
+      font-family: 'Outfit', sans-serif;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .btn-primary::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(135deg, rgba(255, 255, 255, 0.15), transparent);
+      border-radius: inherit;
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-3px) scale(1.02);
+      box-shadow: 0 14px 40px rgba(232, 93, 38, 0.55);
+    }
+
+    .btn-secondary {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      background: rgba(255, 255, 255, 0.08);
+      color: rgba(255, 255, 255, 0.85);
+      text-decoration: none;
+      padding: 14px 30px;
+      border-radius: 50px;
+      font-size: 0.95rem;
+      font-weight: 500;
+      border: 1.5px solid rgba(255, 255, 255, 0.2);
+      transition: all 0.3s;
+      backdrop-filter: blur(8px);
+    }
+
+    .btn-secondary:hover {
+      border-color: var(--orange);
+      color: var(--orange);
+      transform: translateY(-2px);
+      background: rgba(232, 93, 38, 0.1);
+    }
+
+    .hero-stats {
+      display: flex;
+      gap: 36px;
+      margin-top: 52px;
+      flex-wrap: wrap;
+    }
+
+    .hero-stat-num {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 2.4rem;
+      font-weight: 700;
+      color: var(--orange);
+      line-height: 1;
+      letter-spacing: -0.03em;
+    }
+
+    .hero-stat-label {
+      font-size: 0.75rem;
+      color: rgba(255, 255, 255, 0.4);
+      font-weight: 400;
+      margin-top: 3px;
+    }
+
+    .hero-stat-divider {
+      width: 1px;
+      background: rgba(255, 255, 255, 0.1);
+      align-self: stretch;
+    }
+
+    /* ─── 3D PHONE HERO ─────────────────────────────────────── */
+    .hero-right {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      animation: fadeSlideUp 1s 0.2s cubic-bezier(0.16, 1, 0.3, 1) both;
+      perspective: 1200px;
+      position: relative;
+    }
+
+    /* Hide 3D phone on mobile */
+    @media (max-width: 768px) {
+      .hero-right {
+        display: none !important;
+      }
+
+      .hero-inner {
+        grid-template-columns: 1fr !important;
+      }
+
+      .hero-left {
+        text-align: center;
+      }
+
+      .hero-sub {
+        margin-left: auto;
+        margin-right: auto;
+      }
+
+      .hero-actions {
+        justify-content: center;
+      }
+
+      .hero-stats {
+        justify-content: center;
+        gap: 24px;
+      }
+
+      .hero-badge {
+        margin-left: auto;
+        margin-right: auto;
+        display: inline-flex;
+      }
+    }
+
+    .phone-scene {
+      position: relative;
+      width: 300px;
+      height: 600px;
+      transform-style: preserve-3d;
+      animation: phoneFloat 6s ease-in-out infinite;
+    }
+
+    @keyframes phoneFloat {
+
+      0%,
+      100% {
+        transform: rotateY(-14deg) rotateX(4deg) translateY(0)
+      }
+
+      50% {
+        transform: rotateY(-9deg) rotateX(7deg) translateY(-18px)
+      }
+    }
+
+    .phone-glow {
+      position: absolute;
+      width: 260px;
+      height: 260px;
+      background: radial-gradient(circle, rgba(232, 93, 38, 0.55), transparent 70%);
+      filter: blur(55px);
+      left: 50%;
+      top: 50%;
+      transform: translate(-50%, -50%);
+      animation: glowP 3s ease-in-out infinite;
+      pointer-events: none;
+    }
+
+    @keyframes glowP {
+
+      0%,
+      100% {
+        opacity: 0.7;
+        transform: translate(-50%, -50%) scale(1)
+      }
+
+      50% {
+        opacity: 1;
+        transform: translate(-50%, -50%) scale(1.14)
+      }
+    }
+
+    .phone {
+      width: 300px;
+      height: 600px;
+      background: linear-gradient(160deg, #1e1412 0%, #0e0805 100%);
+      border-radius: 42px;
+      border: 1.5px solid rgba(232, 93, 38, 0.28);
+      box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.06), 0 40px 80px rgba(0, 0, 0, 0.75), 0 0 60px rgba(232, 93, 38, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+      position: relative;
+      overflow: hidden;
+      transform-style: preserve-3d;
+    }
+
+    .phone::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      border-radius: 42px;
+      background: linear-gradient(135deg, rgba(255, 255, 255, 0.07) 0%, transparent 50%);
+      pointer-events: none;
+    }
+
+    .phone-notch {
+      position: absolute;
+      top: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 100px;
+      height: 26px;
+      background: #0e0805;
+      border-radius: 0 0 18px 18px;
+      z-index: 10;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+    }
+
+    .notch-cam {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #1a1412;
+      border: 1.5px solid rgba(232, 93, 38, 0.35);
+    }
+
+    .notch-speaker {
+      width: 34px;
+      height: 4px;
+      border-radius: 4px;
+      background: #1a1412;
+    }
+
+    .phone-screen {
+      position: absolute;
+      inset: 8px;
+      border-radius: 36px;
+      overflow: hidden;
+      background: #fdf6ee;
+    }
+
+    .phone-btn-right {
+      position: absolute;
+      right: -3px;
+      top: 120px;
+      width: 3px;
+      height: 60px;
+      background: linear-gradient(to bottom, #2a1a10, #e85d26, #2a1a10);
+      border-radius: 0 3px 3px 0;
+    }
+
+    .phone-btn-left1 {
+      position: absolute;
+      left: -3px;
+      top: 100px;
+      width: 3px;
+      height: 36px;
+      background: linear-gradient(to bottom, #2a1a10, #b8421a, #2a1a10);
+      border-radius: 3px 0 0 3px;
+    }
+
+    .phone-btn-left2 {
+      position: absolute;
+      left: -3px;
+      top: 148px;
+      width: 3px;
+      height: 60px;
+      background: linear-gradient(to bottom, #2a1a10, #b8421a, #2a1a10);
+      border-radius: 3px 0 0 3px;
+    }
+
+    /* App UI inside phone */
+    .app-nav {
+      position: relative;
+      z-index: 2;
+      padding: 34px 14px 8px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .app-logo {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 1.05rem;
+      font-weight: 700;
+      color: var(--text-dark);
+    }
+
+    .app-logo span {
+      color: var(--orange);
+    }
+
+    .app-badge {
+      background: var(--green-pale);
+      color: var(--green);
+      font-size: 0.52rem;
+      font-weight: 700;
+      padding: 3px 8px;
+      border-radius: 50px;
+      letter-spacing: 0.06em;
+    }
+
+    .app-hero-text {
+      padding: 2px 14px 8px;
+    }
+
+    .app-hero-text h3 {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 1rem;
+      font-weight: 700;
+      color: var(--text-dark);
+      margin-bottom: 2px;
+    }
+
+    .app-hero-text p {
+      font-size: 0.58rem;
+      color: var(--text-soft);
+    }
+
+    .app-input-area {
+      padding: 0 14px 8px;
+    }
+
+    .app-input {
+      display: flex;
+      gap: 6px;
+      align-items: center;
+      background: white;
+      border: 1.5px solid rgba(200, 150, 100, 0.2);
+      border-radius: 10px;
+      padding: 7px 10px;
+      font-size: 0.62rem;
+      color: var(--text-soft);
+      margin-bottom: 6px;
+    }
+
+    .app-input-icon {
+      font-size: 0.75rem;
+    }
+
+    .app-ing-row {
+      display: flex;
+      gap: 4px;
+      flex-wrap: wrap;
+    }
+
+    .app-ing {
+      background: white;
+      border: 1px solid rgba(200, 150, 100, 0.2);
+      border-radius: 6px;
+      padding: 3px 7px;
+      font-size: 0.58rem;
+      font-weight: 500;
+      color: var(--text-mid);
+      display: flex;
+      align-items: center;
+      gap: 3px;
+    }
+
+    .app-gen-btn {
+      margin: 6px 14px 8px;
+      background: linear-gradient(135deg, var(--orange), var(--orange-deep));
+      color: white;
+      border: none;
+      border-radius: 11px;
+      padding: 9px 14px;
+      font-size: 0.68rem;
+      font-weight: 700;
+      font-family: 'Outfit', sans-serif;
+      width: calc(100% - 28px);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      position: relative;
+      overflow: hidden;
+      box-shadow: 0 4px 16px rgba(232, 93, 38, 0.38);
+      animation: btnP 2.5s ease-in-out infinite;
+    }
+
+    @keyframes btnP {
+
+      0%,
+      100% {
+        box-shadow: 0 4px 16px rgba(232, 93, 38, 0.38)
+      }
+
+      50% {
+        box-shadow: 0 6px 30px rgba(232, 93, 38, 0.65)
+      }
+    }
+
+    .app-gen-btn .btn-shimmer {
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 60%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.25), transparent);
+      animation: shim 2s infinite;
+    }
+
+    @keyframes shim {
+      to {
+        left: 150%
+      }
+    }
+
+    .app-result {
+      margin: 0 10px 8px;
+      background: linear-gradient(135deg, rgba(255, 252, 248, 0.9), white);
+      border-radius: 12px;
+      padding: 9px 11px;
+      border: 1px solid rgba(200, 150, 100, 0.15);
+      animation: resultSlide 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+
+    @keyframes resultSlide {
+      from {
+        opacity: 0;
+        transform: translateY(8px) scale(0.97)
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0) scale(1)
+      }
+    }
+
+    .app-result-top {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      margin-bottom: 5px;
+    }
+
+    .app-result-emoji {
+      font-size: 1.5rem;
+    }
+
+    .app-result-name {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 0.82rem;
+      font-weight: 700;
+      color: var(--text-dark);
+    }
+
+    .app-result-meta {
+      font-size: 0.52rem;
+      color: var(--text-soft);
+    }
+
+    .app-result-pills {
+      display: flex;
+      gap: 3px;
+      flex-wrap: wrap;
+      margin-bottom: 6px;
+    }
+
+    .app-pill {
+      background: var(--green-pale);
+      color: var(--green);
+      font-size: 0.5rem;
+      font-weight: 700;
+      padding: 2px 6px;
+      border-radius: 50px;
+    }
+
+    .app-pill.o {
+      background: rgba(232, 93, 38, 0.09);
+      color: var(--orange);
+    }
+
+    .app-steps-label {
+      font-size: 0.5rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--text-soft);
+      margin-bottom: 3px;
+    }
+
+    .app-step {
+      display: flex;
+      gap: 4px;
+      align-items: flex-start;
+      margin-bottom: 3px;
+    }
+
+    .app-step-dot {
+      width: 12px;
+      height: 12px;
+      background: rgba(232, 93, 38, 0.1);
+      color: var(--orange);
+      border-radius: 50%;
+      font-size: 0.42rem;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      margin-top: 1px;
+    }
+
+    .app-step-text {
+      font-size: 0.55rem;
+      color: var(--text-mid);
+      line-height: 1.4;
+    }
+
+    .float-el {
+      position: absolute;
+      animation: floatAround 6s ease-in-out infinite;
+      font-size: 1.6rem;
+      pointer-events: none;
+      opacity: 0.9;
+      filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.5));
+    }
+
+    @keyframes floatAround {
+
+      0%,
+      100% {
+        transform: translateY(0) rotate(0deg)
+      }
+
+      50% {
+        transform: translateY(-16px) rotate(8deg)
+      }
+    }
+
+    .float-el.e1 {
+      top: -22px;
+      right: -32px;
+      animation-delay: 0s;
+      font-size: 1.8rem;
+    }
+
+    .float-el.e2 {
+      bottom: 36px;
+      right: -38px;
+      animation-delay: 2.2s;
+      font-size: 1.4rem;
+    }
+
+    .float-el.e3 {
+      bottom: -12px;
+      left: -22px;
+      animation-delay: 4.1s;
+      font-size: 1.6rem;
+    }
+
+    .float-el.e4 {
+      top: 28%;
+      left: -42px;
+      animation-delay: 1.5s;
+      font-size: 1.3rem;
+    }
+
+    @keyframes fadeSlideUp {
+      from {
+        opacity: 0;
+        transform: translateY(36px)
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0)
+      }
+    }
+
+    /* ─── MARQUEE ─────────────────────────────────────────────── */
+    .marquee-section {
+      background: linear-gradient(135deg, var(--orange-deep), var(--orange), var(--orange-light));
+      padding: 13px 0;
+      overflow: hidden;
+      position: relative;
+      z-index: 1;
+    }
+
+    .marquee-section::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(90deg, rgba(255, 255, 255, 0.05) 0%, transparent 20%, transparent 80%, rgba(255, 255, 255, 0.05) 100%);
+      pointer-events: none;
+    }
+
+    .marquee-track {
+      display: flex;
+      gap: 0;
+      animation: marquee 22s linear infinite;
+      width: max-content;
+    }
+
+    .marquee-track:hover {
+      animation-play-state: paused;
+    }
+
+    .marquee-item {
+      white-space: nowrap;
+      color: rgba(255, 255, 255, 0.92);
+      font-size: 0.82rem;
+      font-weight: 500;
+      letter-spacing: 0.05em;
+      padding: 0 22px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .marquee-item::after {
+      content: '◆';
+      font-size: 0.45rem;
+      opacity: 0.5;
+    }
+
+    @keyframes marquee {
+      from {
+        transform: translateX(0)
+      }
+
+      to {
+        transform: translateX(-50%)
+      }
+    }
+
+    /* ─── SECTION UTILS ─────────────────────────────────────── */
+    section {
+      position: relative;
+      z-index: 1;
+    }
+
+    .section-label {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 0.72rem;
+      font-weight: 600;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--orange);
+      margin-bottom: 14px;
+    }
+
+    .section-label::before {
+      content: '';
+      width: 22px;
+      height: 1.5px;
+      background: var(--orange);
+      border-radius: 1px;
+    }
+
+    .section-title {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: clamp(2.2rem, 3.5vw, 3.2rem);
+      font-weight: 700;
+      line-height: 1.08;
+      color: var(--text-dark);
+      margin-bottom: 18px;
+      letter-spacing: -0.02em;
+    }
+
+    .section-desc {
+      font-size: 1rem;
+      color: var(--text-mid);
+      line-height: 1.75;
+      max-width: 540px;
+      font-weight: 300;
+    }
+
+    /* ─── FEATURES ───────────────────────────────────────────── */
+    .features-section {
+      padding: 110px 5vw;
+    }
+
+    .features-header {
+      text-align: center;
+      max-width: 600px;
+      margin: 0 auto 64px;
+    }
+
+    .features-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 20px;
+      max-width: 1100px;
+      margin: 0 auto;
+    }
+
+    .feature-card {
+      background: white;
+      border-radius: 22px;
+      padding: 34px 28px;
+      border: 1px solid var(--border);
+      box-shadow: 0 4px 20px rgba(90, 50, 20, 0.05);
+      position: relative;
+      overflow: hidden;
+      opacity: 0;
+      transform: translateY(30px);
+      transition: opacity 0.6s cubic-bezier(0.16, 1, 0.3, 1), transform 0.6s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.4s, border-color 0.3s;
+      transform-style: preserve-3d;
+      perspective: 800px;
+    }
+
+    .feature-card.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .feature-card:hover {
+      transform: translateY(-8px) !important;
+      box-shadow: 0 20px 50px rgba(90, 50, 20, 0.12);
+      border-color: rgba(232, 93, 38, 0.2);
+    }
+
+    .feature-card::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 2px;
+      background: linear-gradient(90deg, var(--orange), var(--orange-light));
+      opacity: 0;
+      transition: opacity 0.3s;
+    }
+
+    .feature-card:hover::after {
+      opacity: 1;
+    }
+
+    .feature-card .feature-icon {
+      transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+
+    .feature-card:hover .feature-icon {
+      transform: translateZ(20px) rotate(-5deg) scale(1.15);
+    }
+
+    .feature-icon {
+      width: 52px;
+      height: 52px;
+      border-radius: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.6rem;
+      margin-bottom: 18px;
+    }
+
+    .feature-icon.orange {
+      background: rgba(232, 93, 38, 0.08);
+    }
+
+    .feature-icon.green {
+      background: rgba(45, 106, 79, 0.08);
+    }
+
+    .feature-icon.brown {
+      background: rgba(92, 61, 46, 0.07);
+    }
+
+    .feature-card h3 {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 1.22rem;
+      font-weight: 700;
+      color: var(--text-dark);
+      margin-bottom: 8px;
+      letter-spacing: -0.01em;
+    }
+
+    .feature-card p {
+      font-size: 0.88rem;
+      color: var(--text-soft);
+      line-height: 1.72;
+      font-weight: 300;
+    }
+
+    .feature-tag {
+      display: inline-block;
+      margin-top: 14px;
+      font-size: 0.68rem;
+      font-weight: 600;
+      padding: 3px 10px;
+      border-radius: 50px;
+      color: var(--orange);
+      background: rgba(232, 93, 38, 0.07);
+      letter-spacing: 0.04em;
+    }
+
+    /* ─── GLOW BORDER ─────────────────────────────────────────── */
+    .glow-border {
+      position: relative;
+    }
+
+    .glow-border::before {
+      content: '';
+      position: absolute;
+      inset: -2px;
+      border-radius: inherit;
+      background: conic-gradient(from var(--angle, 0deg), transparent 40%, var(--orange) 50%, transparent 60%);
+      z-index: -1;
+      opacity: 0;
+      transition: opacity 0.5s;
+      animation: rotateBorder 4s linear infinite;
+    }
+
+    .glow-border:hover::before {
+      opacity: 1;
+    }
+
+    @property --angle {
+      syntax: '<angle>';
+      initial-value: 0deg;
+      inherits: false;
+    }
+
+    @keyframes rotateBorder {
+      to {
+        --angle: 360deg;
+      }
+    }
+
+    /* ═══════════════════════════════════════════════════════════
+       HOW IT WORKS — TRUE 3D CARDS
+    ═══════════════════════════════════════════════════════════ */
+    .how-section {
+      background: var(--text-dark);
+      padding: 110px 5vw;
+      color: white;
+      perspective: 1600px;
+    }
+
+    .how-header {
+      text-align: center;
+      max-width: 620px;
+      margin: 0 auto 64px;
+    }
+
+    .how-header .section-label {
+      color: rgba(255, 160, 100, 0.9);
+      justify-content: center;
+    }
+
+    .how-header .section-label::before {
+      background: rgba(255, 160, 100, 0.9);
+    }
+
+    .how-header .section-title {
+      color: white;
+    }
+
+    .how-header .section-desc {
+      color: rgba(255, 255, 255, 0.45);
+      margin: 0 auto;
+      text-align: center;
+    }
+
+    .how-cards-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 18px;
+      max-width: 1200px;
+      margin: 0 auto 24px;
+    }
+
+    .how-card-3d {
+      position: relative;
+      border-radius: 22px;
+      padding: 28px 22px 24px;
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid rgba(255, 255, 255, 0.07);
+      cursor: pointer;
+      overflow: hidden;
+      transform-style: preserve-3d;
+      will-change: transform;
+      transition: transform 0.55s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.5s, background 0.35s, border-color 0.35s;
+    }
+
+    .how-card-3d::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      border-radius: 22px;
+      background: radial-gradient(ellipse 80% 60% at 50% 0%, rgba(232, 93, 38, 0.3) 0%, transparent 65%);
+      opacity: 0;
+      transition: opacity 0.4s;
+      pointer-events: none;
+    }
+
+    .how-card-3d::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 2px;
+      background: linear-gradient(90deg, var(--orange), var(--orange-light), var(--green-light));
+      border-radius: 22px 22px 0 0;
+      opacity: 0;
+      transition: opacity 0.4s;
+    }
+
+    .how-card-3d:hover {
+      background: rgba(255, 255, 255, 0.06);
+      border-color: rgba(232, 93, 38, 0.32);
+      transform: translateY(-14px) rotateX(8deg) rotateY(-3deg) scale(1.03);
+      box-shadow: 0 40px 70px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(232, 93, 38, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.06);
+    }
+
+    .how-card-3d.active {
+      background: rgba(255, 255, 255, 0.07);
+      border-color: rgba(232, 93, 38, 0.5);
+      transform: translateY(-22px) rotateX(10deg) rotateY(-4deg) scale(1.05);
+      box-shadow: 0 50px 90px rgba(0, 0, 0, 0.65), 0 0 0 1px rgba(232, 93, 38, 0.55), 0 0 55px rgba(232, 93, 38, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+    }
+
+    .how-card-3d:hover::before,
+    .how-card-3d.active::before {
+      opacity: 1;
+    }
+
+    .how-card-3d:hover::after,
+    .how-card-3d.active::after {
+      opacity: 1;
+    }
+
+    .card-num {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 2.8rem;
+      font-weight: 700;
+      line-height: 1;
+      color: rgba(232, 93, 38, 0.1);
+      margin-bottom: 6px;
+      letter-spacing: -0.04em;
+      transition: color 0.4s;
+    }
+
+    .how-card-3d:hover .card-num,
+    .how-card-3d.active .card-num {
+      color: rgba(232, 93, 38, 0.38);
+    }
+
+    .card-icon-wrap {
+      width: 50px;
+      height: 50px;
+      border-radius: 15px;
+      background: rgba(232, 93, 38, 0.1);
+      border: 1px solid rgba(232, 93, 38, 0.2);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.4rem;
+      margin-bottom: 18px;
+      transition: all 0.45s cubic-bezier(0.34, 1.56, 0.64, 1);
+      transform-style: preserve-3d;
+    }
+
+    .how-card-3d:hover .card-icon-wrap,
+    .how-card-3d.active .card-icon-wrap {
+      background: rgba(232, 93, 38, 0.22);
+      border-color: rgba(232, 93, 38, 0.55);
+      transform: translateZ(18px) scale(1.18) rotate(-8deg);
+      box-shadow: 0 10px 30px rgba(232, 93, 38, 0.38);
+    }
+
+    .card-title {
+      font-size: 0.95rem;
+      font-weight: 700;
+      color: white;
+      margin-bottom: 8px;
+      letter-spacing: -0.01em;
+    }
+
+    .card-desc {
+      font-size: 0.8rem;
+      color: rgba(255, 255, 255, 0.4);
+      line-height: 1.68;
+      font-weight: 300;
+      margin-bottom: 16px;
+    }
+
+    .card-progress {
+      height: 2px;
+      background: rgba(255, 255, 255, 0.06);
+      border-radius: 2px;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .card-progress-fill {
+      position: absolute;
+      top: 0;
+      left: 0;
+      height: 100%;
+      background: linear-gradient(90deg, var(--orange), var(--orange-light));
+      border-radius: 2px;
+      width: 0%;
+      transition: none;
+    }
+
+    .card-active-badge {
+      position: absolute;
+      top: 14px;
+      right: 14px;
+      background: rgba(232, 93, 38, 0.2);
+      border: 1px solid rgba(232, 93, 38, 0.45);
+      color: var(--orange-light);
+      font-size: 0.58rem;
+      font-weight: 700;
+      padding: 3px 9px;
+      border-radius: 50px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      opacity: 0;
+      transition: opacity 0.3s;
+    }
+
+    .how-card-3d.active .card-active-badge {
+      opacity: 1;
+    }
+
+    .how-panel-container {
+      max-width: 1200px;
+      margin: 0 auto;
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 24px;
+      overflow: hidden;
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+    }
+
+    .how-panel {
+      display: none;
+      padding: 32px 36px;
+      animation: panelIn 0.45s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .how-panel.active {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 40px;
+      align-items: center;
+    }
+
+    @keyframes panelIn {
+      from {
+        opacity: 0;
+        transform: translateY(14px)
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0)
+      }
+    }
+
+    .panel-info-title {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: white;
+      margin-bottom: 10px;
+    }
+
+    .panel-info-desc {
+      font-size: 0.88rem;
+      color: rgba(255, 255, 255, 0.45);
+      line-height: 1.75;
+      font-weight: 300;
+    }
+
+    .panel-demo {
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 18px;
+      padding: 22px;
+    }
+
+    .sim-header {
+      font-size: 0.68rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: rgba(255, 255, 255, 0.35);
+      margin-bottom: 14px;
+    }
+
+    .sim-input-row {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 12px;
+    }
+
+    .sim-input {
+      flex: 1;
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 10px;
+      padding: 10px 14px;
+      color: rgba(255, 255, 255, 0.7);
+      font-size: 0.83rem;
+      font-family: 'Outfit', sans-serif;
+      outline: none;
+      transition: border 0.2s;
+    }
+
+    .sim-input:focus {
+      border-color: rgba(232, 93, 38, 0.4);
+    }
+
+    .sim-add {
+      background: var(--orange);
+      color: white;
+      border: none;
+      border-radius: 10px;
+      padding: 10px 14px;
+      cursor: pointer;
+      font-size: 0.88rem;
+      font-weight: 600;
+      font-family: 'Outfit', sans-serif;
+      transition: all 0.2s;
+    }
+
+    .sim-add:hover {
+      background: var(--orange-light);
+      transform: scale(1.05);
+    }
+
+    .sim-tags {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+      min-height: 38px;
+    }
+
+    .sim-tag {
+      background: rgba(255, 255, 255, 0.07);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      color: rgba(255, 255, 255, 0.7);
+      padding: 5px 10px;
+      border-radius: 8px;
+      font-size: 0.78rem;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      animation: tagPop 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+
+    @keyframes tagPop {
+      from {
+        transform: scale(0.5);
+        opacity: 0
+      }
+
+      to {
+        transform: scale(1);
+        opacity: 1
+      }
+    }
+
+    .sim-mic {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-top: 14px;
+      padding: 12px;
+      background: rgba(82, 183, 136, 0.08);
+      border: 1px solid rgba(82, 183, 136, 0.18);
+      border-radius: 12px;
+    }
+
+    .mic-icon {
+      width: 30px;
+      height: 30px;
+      background: rgba(45, 106, 79, 0.6);
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.85rem;
+    }
+
+    .sim-mic span {
+      font-size: 0.8rem;
+      color: rgba(255, 255, 255, 0.5);
+    }
+
+    .ai-log {
+      font-family: 'Courier New', monospace;
+      font-size: 0.76rem;
+      line-height: 2;
+    }
+
+    .ai-log-line {
+      color: rgba(255, 255, 255, 0.5);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .ai-log-line .dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+
+    .dot-pending {
+      background: rgba(255, 255, 255, 0.15);
+    }
+
+    .dot-active {
+      background: var(--orange-light);
+      animation: dotBlink 0.7s step-end infinite;
+    }
+
+    .dot-done {
+      background: var(--green-light);
+    }
+
+    @keyframes dotBlink {
+
+      0%,
+      100% {
+        opacity: 1
+      }
+
+      50% {
+        opacity: 0
+      }
+    }
+
+    .text-hl {
+      color: var(--orange-light);
+    }
+
+    .text-ok {
+      color: var(--green-light);
+    }
+
+    .ai-match-card {
+      margin-top: 16px;
+      background: rgba(232, 93, 38, 0.07);
+      border: 1px solid rgba(232, 93, 38, 0.2);
+      border-radius: 14px;
+      padding: 14px;
+    }
+
+    .ai-match-title {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 1.05rem;
+      font-weight: 700;
+      color: white;
+      margin-bottom: 4px;
+    }
+
+    .ai-match-sub {
+      font-size: 0.75rem;
+      color: rgba(255, 255, 255, 0.4);
+      margin-bottom: 10px;
+    }
+
+    .ai-conf {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .ai-conf-label {
+      font-size: 0.68rem;
+      color: rgba(255, 255, 255, 0.4);
+    }
+
+    .ai-conf-bar {
+      flex: 1;
+      height: 3px;
+      background: rgba(255, 255, 255, 0.08);
+      border-radius: 2px;
+    }
+
+    .ai-conf-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--orange), var(--green-light));
+      border-radius: 2px;
+      width: 0%;
+      transition: width 1s ease;
+    }
+
+    .ai-conf-val {
+      font-size: 0.7rem;
+      color: var(--orange-light);
+      font-weight: 700;
+    }
+
+    .cust-row {
+      margin-bottom: 14px;
+    }
+
+    .cust-label {
+      font-size: 0.68rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: rgba(255, 255, 255, 0.35);
+      margin-bottom: 8px;
+    }
+
+    .cust-slider-wrap {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .cust-slider {
+      flex: 1;
+      -webkit-appearance: none;
+      height: 3px;
+      border-radius: 2px;
+      background: rgba(255, 255, 255, 0.1);
+      outline: none;
+      cursor: pointer;
+    }
+
+    .cust-slider::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 16px;
+      height: 16px;
+      background: var(--orange);
+      border-radius: 50%;
+      cursor: pointer;
+      box-shadow: 0 0 0 4px rgba(232, 93, 38, 0.2);
+    }
+
+    .cust-val {
+      font-size: 0.88rem;
+      font-weight: 700;
+      color: var(--orange-light);
+      min-width: 22px;
+    }
+
+    .cust-chips {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+
+    .cust-chip {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      color: rgba(255, 255, 255, 0.55);
+      padding: 5px 12px;
+      border-radius: 50px;
+      font-size: 0.75rem;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .cust-chip.sel {
+      background: rgba(232, 93, 38, 0.18);
+      border-color: var(--orange);
+      color: var(--orange-light);
+    }
+
+    .scaled-preview {
+      margin-top: 12px;
+      background: rgba(255, 255, 255, 0.03);
+      border-radius: 12px;
+      padding: 12px;
+      border: 1px solid rgba(255, 255, 255, 0.06);
+    }
+
+    .scaled-item {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.78rem;
+      color: rgba(255, 255, 255, 0.5);
+      padding: 3px 0;
+    }
+
+    .scaled-item .qty {
+      color: var(--orange-light);
+      font-weight: 600;
+    }
+
+    .save-recipe {
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 14px;
+      padding: 16px;
+      margin-bottom: 12px;
+    }
+
+    .save-recipe-name {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 1.02rem;
+      font-weight: 700;
+      color: white;
+      margin-bottom: 8px;
+    }
+
+    .save-steps {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .save-step {
+      display: flex;
+      gap: 8px;
+      align-items: flex-start;
+    }
+
+    .save-step-num {
+      width: 20px;
+      height: 20px;
+      background: rgba(232, 93, 38, 0.18);
+      color: var(--orange-light);
+      border-radius: 6px;
+      font-size: 0.65rem;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .save-step-text {
+      font-size: 0.76rem;
+      color: rgba(255, 255, 255, 0.5);
+      line-height: 1.5;
+    }
+
+    .save-actions {
+      display: flex;
+      gap: 8px;
+    }
+
+    .save-btn {
+      flex: 1;
+      padding: 10px;
+      border-radius: 10px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+      border: none;
+      font-family: 'Outfit', sans-serif;
+    }
+
+    .save-btn.primary {
+      background: var(--green);
+      color: white;
+    }
+
+    .save-btn.primary:hover {
+      background: var(--green-light);
+      transform: translateY(-1px);
+    }
+
+    .save-btn.secondary {
+      background: rgba(255, 255, 255, 0.05);
+      color: rgba(255, 255, 255, 0.6);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .save-btn.secondary:hover {
+      background: rgba(255, 255, 255, 0.1);
+    }
+
+    .save-success {
+      display: none;
+      text-align: center;
+      padding: 16px;
+      animation: panelIn 0.4s ease;
+    }
+
+    .save-success.show {
+      display: block;
+    }
+
+    .save-success-icon {
+      font-size: 2.2rem;
+      margin-bottom: 8px;
+    }
+
+    .save-success-text {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: var(--green-light);
+    }
+
+    /* ─── TESTIMONIALS ───────────────────────────────────────── */
+    .proof-section {
+      padding: 110px 5vw;
+      background: linear-gradient(180deg, var(--cream) 0%, var(--warm-white) 100%);
+    }
+
+    .proof-header {
+      text-align: center;
+      max-width: 600px;
+      margin: 0 auto 60px;
+    }
+
+    .proof-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 20px;
+      max-width: 1100px;
+      margin: 0 auto;
+    }
+
+    .proof-card {
+      background: white;
+      border-radius: 22px;
+      padding: 30px 26px;
+      border: 1px solid var(--border);
+      box-shadow: 0 4px 20px rgba(90, 50, 20, 0.05);
+      transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+      opacity: 0;
+      transform: translateY(24px);
+      transform-style: preserve-3d;
+      perspective: 600px;
+    }
+
+    .proof-card.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .proof-card:hover {
+      transform: translateY(-6px);
+      box-shadow: 0 16px 40px rgba(90, 50, 20, 0.1);
+    }
+
+    .proof-card:hover .proof-avatar {
+      transform: translateZ(15px) scale(1.1);
+      transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+
+    .proof-stars {
+      color: var(--orange);
+      font-size: 0.85rem;
+      letter-spacing: 2px;
+      margin-bottom: 14px;
+    }
+
+    .proof-text {
+      font-size: 0.92rem;
+      color: var(--text-mid);
+      line-height: 1.75;
+      font-weight: 300;
+      margin-bottom: 20px;
+      font-style: italic;
+    }
+
+    .proof-author {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .proof-avatar {
+      width: 40px;
+      height: 40px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.1rem;
+      flex-shrink: 0;
+    }
+
+    .proof-name {
+      font-weight: 600;
+      font-size: 0.85rem;
+      color: var(--text-dark);
+    }
+
+    .proof-role {
+      font-size: 0.72rem;
+      color: var(--text-soft);
+      margin-top: 1px;
+    }
+
+    /* ─── IMPACT ─────────────────────────────────────────────── */
+    .impact-section {
+      padding: 80px 5vw;
+      background: var(--orange);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .impact-section::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(135deg, var(--orange-deep) 0%, var(--orange) 50%, var(--orange-light) 100%);
+      opacity: 0.6;
+    }
+
+    .impact-inner {
+      max-width: 1100px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 32px;
+      position: relative;
+      z-index: 1;
+    }
+
+    .impact-stat {
+      text-align: center;
+      color: white;
+      transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+
+    .impact-stat:hover {
+      transform: translateY(-8px) scale(1.05);
+    }
+
+    .impact-num {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 3.2rem;
+      font-weight: 700;
+      line-height: 1;
+      margin-bottom: 6px;
+      letter-spacing: -0.03em;
+      background: linear-gradient(135deg, #fff, rgba(255, 255, 255, 0.7));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .impact-label {
+      font-size: 0.82rem;
+      font-weight: 400;
+      opacity: 0.8;
+    }
+
+    /* ─── CREATOR ────────────────────────────────────────────── */
+    .creator-section {
+      padding: 110px 5vw;
+      background: var(--text-dark);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .creator-section::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background:
+        radial-gradient(ellipse at 65% 50%, rgba(232, 93, 38, 0.1) 0%, transparent 60%),
+        radial-gradient(ellipse at 20% 30%, rgba(45, 106, 79, 0.08) 0%, transparent 50%);
+    }
+
+    .creator-inner {
+      max-width: 1100px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 80px;
+      align-items: center;
+      position: relative;
+      z-index: 1;
+    }
+
+    .creator-right .section-label {
+      color: rgba(255, 160, 100, 0.9);
+    }
+
+    .creator-right .section-label::before {
+      background: rgba(255, 160, 100, 0.9);
+    }
+
+    .creator-right .section-title {
+      color: white;
+    }
+
+    .creator-card {
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid rgba(255, 255, 255, 0.09);
+      border-radius: 26px;
+      padding: 36px;
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      position: relative;
+    }
+
+    .creator-card::before {
+      content: '';
+      position: absolute;
+      inset: -1px;
+      border-radius: 27px;
+      background: linear-gradient(135deg, rgba(232, 93, 38, 0.35), rgba(45, 106, 79, 0.15), transparent 55%);
+      z-index: -1;
+    }
+
+    .creator-avatar {
+      width: 80px;
+      height: 80px;
+      border-radius: 20px;
+      background: linear-gradient(135deg, var(--orange), var(--orange-deep));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 2.2rem;
+      margin-bottom: 18px;
+      box-shadow: 0 8px 28px rgba(232, 93, 38, 0.4);
+    }
+
+    .creator-name {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 1.7rem;
+      font-weight: 700;
+      color: white;
+      margin-bottom: 4px;
+      letter-spacing: -0.02em;
+    }
+
+    .creator-role {
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: rgba(255, 160, 100, 0.8);
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      margin-bottom: 20px;
+    }
+
+    .creator-info-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-bottom: 22px;
+    }
+
+    .creator-info-item {
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid rgba(255, 255, 255, 0.07);
+      border-radius: 10px;
+      padding: 12px;
+    }
+
+    .creator-info-label {
+      font-size: 0.65rem;
+      font-weight: 600;
+      color: rgba(255, 255, 255, 0.35);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      margin-bottom: 4px;
+    }
+
+    .creator-info-value {
+      font-size: 0.88rem;
+      font-weight: 600;
+      color: white;
+    }
+
+    .creator-quote {
+      background: rgba(232, 93, 38, 0.08);
+      border-left: 2px solid var(--orange);
+      border-radius: 0 12px 12px 0;
+      padding: 14px 18px;
+      font-family: 'Instrument Serif', serif;
+      font-style: italic;
+      font-size: 1.05rem;
+      color: rgba(255, 255, 255, 0.75);
+      line-height: 1.6;
+    }
+
+    .mentor-card {
+      background: rgba(45, 106, 79, 0.1);
+      border: 1px solid rgba(82, 183, 136, 0.18);
+      border-radius: 18px;
+      padding: 24px;
+      margin-top: 20px;
+      display: flex;
+      gap: 16px;
+      align-items: flex-start;
+    }
+
+    .mentor-avatar {
+      width: 50px;
+      height: 50px;
+      flex-shrink: 0;
+      border-radius: 14px;
+      background: linear-gradient(135deg, var(--green), var(--green-light));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.4rem;
+    }
+
+    .mentor-label {
+      font-size: 0.65rem;
+      font-weight: 700;
+      color: var(--green-light);
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      margin-bottom: 3px;
+    }
+
+    .mentor-name {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: white;
+      margin-bottom: 2px;
+    }
+
+    .mentor-desc {
+      font-size: 0.78rem;
+      color: rgba(255, 255, 255, 0.45);
+    }
+
+    .mentor-roll {
+      display: inline-block;
+      margin-top: 7px;
+      background: rgba(82, 183, 136, 0.12);
+      color: var(--green-light);
+      font-size: 0.68rem;
+      font-weight: 600;
+      padding: 3px 10px;
+      border-radius: 50px;
+    }
+
+    .creator-right p {
+      color: rgba(255, 255, 255, 0.55);
+      font-size: 1rem;
+      line-height: 1.8;
+      font-weight: 300;
+      margin-bottom: 18px;
+    }
+
+    .project-meta {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      margin-top: 28px;
+    }
+
+    .project-meta-item {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      border-radius: 12px;
+      padding: 14px 16px;
+      transition: all 0.2s;
+    }
+
+    .project-meta-item:hover {
+      background: rgba(255, 255, 255, 0.06);
+      border-color: rgba(232, 93, 38, 0.2);
+    }
+
+    .project-meta-icon {
+      font-size: 1.2rem;
+      flex-shrink: 0;
+    }
+
+    .project-meta-text {
+      font-size: 0.85rem;
+      color: rgba(255, 255, 255, 0.6);
+    }
+
+    .project-meta-text strong {
+      color: white;
+      font-weight: 600;
+    }
+
+    /* ─── FUTURE SCOPE ───────────────────────────────────────── */
+    .future-section {
+      padding: 110px 5vw;
+    }
+
+    .future-inner {
+      max-width: 1100px;
+      margin: 0 auto;
+    }
+
+    .future-header {
+      text-align: center;
+      margin-bottom: 56px;
+    }
+
+    .future-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 18px;
+    }
+
+    .future-card {
+      background: white;
+      border-radius: 20px;
+      padding: 28px;
+      border: 1px solid var(--border);
+      box-shadow: 0 4px 16px rgba(90, 50, 20, 0.05);
+      display: flex;
+      gap: 20px;
+      align-items: flex-start;
+      transition: all 0.35s;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .future-card:hover {
+      transform: translateX(6px);
+      border-color: rgba(232, 93, 38, 0.25);
+      box-shadow: 0 8px 30px rgba(90, 50, 20, 0.1);
+    }
+
+    .future-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 4px;
+      height: 0;
+      background: linear-gradient(180deg, var(--orange), var(--green-light));
+      border-radius: 0 0 4px 4px;
+      transition: height 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+
+    .future-card:hover::before {
+      height: 100%;
+    }
+
+    .future-num {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 2.5rem;
+      font-weight: 700;
+      color: rgba(232, 93, 38, 0.1);
+      line-height: 1;
+      flex-shrink: 0;
+      width: 48px;
+    }
+
+    .future-card h4 {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: var(--text-dark);
+      margin-bottom: 6px;
+      letter-spacing: -0.01em;
+    }
+
+    .future-card p {
+      font-size: 0.85rem;
+      color: var(--text-soft);
+      line-height: 1.7;
+      font-weight: 300;
+    }
+
+    /* ─── CTA ───────────────────────────────────────────────── */
+    .cta-section {
+      padding: 110px 5vw;
+      background: var(--text-dark);
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .cta-section::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(ellipse at 50% 50%, rgba(232, 93, 38, 0.18) 0%, transparent 65%);
+    }
+
+    .cta-inner {
+      position: relative;
+      z-index: 1;
+      max-width: 560px;
+      margin: 0 auto;
+    }
+
+    .cta-section h2 {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: clamp(2.4rem, 4vw, 3.5rem);
+      font-weight: 700;
+      color: white;
+      line-height: 1.08;
+      margin-bottom: 18px;
+      letter-spacing: -0.03em;
+    }
+
+    .cta-section p {
+      color: rgba(255, 255, 255, 0.55);
+      font-size: 1rem;
+      line-height: 1.7;
+      margin-bottom: 36px;
+      font-weight: 300;
+    }
+
+    .btn-white {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      background: white;
+      color: var(--orange-deep);
+      padding: 15px 36px;
+      border-radius: 50px;
+      font-size: 0.95rem;
+      font-weight: 600;
+      text-decoration: none;
+      box-shadow: 0 8px 30px rgba(0, 0, 0, 0.25);
+      transition: all 0.3s;
+      letter-spacing: 0.01em;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .btn-white::before {
+      content: '';
+      position: absolute;
+      inset: -2px;
+      border-radius: inherit;
+      background: conic-gradient(from 0deg, transparent, rgba(232, 93, 38, 0.3), transparent);
+      animation: rotateBorder 3s linear infinite;
+      z-index: -1;
+    }
+
+    .btn-white:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 18px 45px rgba(0, 0, 0, 0.35);
+    }
+
+    /* ─── FOOTER ─────────────────────────────────────────────── */
+    footer {
+      background: #0c0803;
+      padding: 56px 5vw 28px;
+      color: rgba(255, 255, 255, 0.45);
+    }
+
+    .footer-inner {
+      max-width: 1100px;
+      margin: 0 auto;
+    }
+
+    .footer-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 36px;
+      padding-bottom: 36px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+      flex-wrap: wrap;
+      gap: 20px;
+    }
+
+    .footer-brand .nav-logo-text {
+      color: white;
+    }
+
+    .footer-tagline {
+      font-size: 0.8rem;
+      margin-top: 5px;
+    }
+
+    .footer-links {
+      display: flex;
+      gap: 26px;
+      flex-wrap: wrap;
+    }
+
+    .footer-links a {
+      color: rgba(255, 255, 255, 0.4);
+      text-decoration: none;
+      font-size: 0.84rem;
+      transition: color 0.3s;
+    }
+
+    .footer-links a:hover {
+      color: var(--orange-light);
+    }
+
+    .footer-bottom {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .footer-bottom p {
+      font-size: 0.78rem;
+    }
+
+    .footer-credit {
+      font-family: 'Instrument Serif', serif;
+      font-style: italic;
+      font-size: 1rem;
+      color: var(--orange-light);
+    }
+
+    /* ─── MOBILE MENU ────────────────────────────────────────── */
+    .mobile-menu {
+      display: none;
+      position: fixed;
+      top: 68px;
+      left: 0;
+      right: 0;
+      z-index: 99;
+      background: rgba(253, 246, 238, 0.97);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border-bottom: 1px solid var(--border);
+      padding: 16px 5vw 26px;
+      flex-direction: column;
+      gap: 2px;
+      box-shadow: 0 8px 30px rgba(90, 50, 20, 0.1);
+      transform: translateY(-16px);
+      opacity: 0;
+      transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+      pointer-events: none;
+    }
+
+    .mobile-menu.open {
+      display: flex;
+      transform: translateY(0);
+      opacity: 1;
+      pointer-events: all;
+    }
+
+    .mobile-menu a {
+      text-decoration: none;
+      color: var(--text-mid);
+      font-size: 0.95rem;
+      font-weight: 500;
+      padding: 11px 0;
+      border-bottom: 1px solid rgba(200, 150, 100, 0.1);
+      transition: color 0.2s;
+    }
+
+    .mobile-menu a:hover {
+      color: var(--orange);
+    }
+
+    .mobile-menu a:last-child {
+      border-bottom: none;
+    }
+
+    /* ─── SCROLL ANIMATIONS ─────────────────────────────────── */
+    .reveal {
+      opacity: 0;
+      transform: translateY(24px);
+      transition: opacity 0.7s cubic-bezier(0.16, 1, 0.3, 1), transform 0.7s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .reveal.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .reveal-left {
+      opacity: 0;
+      transform: translateX(-24px);
+      transition: opacity 0.7s cubic-bezier(0.16, 1, 0.3, 1), transform 0.7s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .reveal-left.visible {
+      opacity: 1;
+      transform: translateX(0);
+    }
+
+    .reveal-right {
+      opacity: 0;
+      transform: translateX(24px);
+      transition: opacity 0.7s cubic-bezier(0.16, 1, 0.3, 1), transform 0.7s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .reveal-right.visible {
+      opacity: 1;
+      transform: translateX(0);
+    }
+
+    /* ─── RESPONSIVE ─────────────────────────────────────────── */
+    @media (max-width: 1100px) {
+      .how-cards-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+
+      .how-panel.active {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 1024px) {
+      .features-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+
+      .proof-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+
+      .impact-inner {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+
+    @media (max-width: 768px) {
+      .nav-links {
+        display: none;
+      }
+
+      .hamburger {
+        display: flex;
+      }
+
+      .hero {
+        padding: 100px 5vw 60px;
+        align-items: center;
+        min-height: 100svh;
+      }
+
+      .hero-left {
+        text-align: center;
+      }
+
+      .hero-sub {
+        margin-left: auto;
+        margin-right: auto;
+      }
+
+      .hero-actions {
+        justify-content: center;
+      }
+
+      .hero-stats {
+        justify-content: center;
+        gap: 24px;
+      }
+
+      .hero-stat {
+        text-align: center;
+      }
+
+      .hero-badge {
+        margin-left: auto;
+        margin-right: auto;
+        display: inline-flex;
+      }
+
+      .how-cards-grid {
+        grid-template-columns: 1fr 1fr;
+        gap: 14px;
+      }
+
+      .how-panel.active {
+        grid-template-columns: 1fr;
+      }
+
+      .creator-inner {
+        grid-template-columns: 1fr;
+        gap: 40px;
+      }
+
+      .creator-right {
+        order: -1;
+      }
+
+      .features-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .future-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .proof-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .footer-top {
+        flex-direction: column;
+      }
+    }
+
+    @media (max-width: 540px) {
+      .how-cards-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .how-panel {
+        padding: 22px 18px;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .creator-info-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .hero-actions {
+        flex-direction: column;
+        align-items: stretch;
+      }
+
+      .btn-primary,
+      .btn-secondary {
+        width: 100%;
+        justify-content: center;
+      }
+
+      .impact-inner {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 20px;
+      }
+
+      .hero-title {
+        font-size: clamp(2.5rem, 10vw, 3.2rem);
+      }
+    }
+
+    /* ═══ THREE.JS CANVAS ═══ */
+    #hero3dCanvas {
+      position: absolute;
+      inset: 0;
+      z-index: 4;
+      pointer-events: none;
+    }
+
+    /* ═══ PARTICLE SYSTEM ═══ */
+    .particles-container {
+      position: absolute;
+      inset: 0;
+      overflow: hidden;
+      pointer-events: none;
+      z-index: 4;
+    }
+
+    .particle {
+      position: absolute;
+      border-radius: 50%;
+      pointer-events: none;
+      animation: particleDrift linear infinite;
+    }
+
+    .particle.glow {
+      box-shadow: 0 0 6px 2px currentColor;
+    }
+
+    @keyframes particleDrift {
+      0% {
+        transform: translateY(0) translateX(0) scale(1);
+        opacity: 0;
+      }
+
+      10% {
+        opacity: 1;
+      }
+
+      90% {
+        opacity: 1;
+      }
+
+      100% {
+        transform: translateY(-100vh) translateX(40px) scale(0.3);
+        opacity: 0;
+      }
+    }
+
+    /* ═══ 3D FLOATING GEOMETRIC SHAPES ═══ */
+    .geo-shape {
+      position: absolute;
+      pointer-events: none;
+      z-index: 4;
+      opacity: 0.12;
+    }
+
+    .geo-shape svg {
+      width: 100%;
+      height: 100%;
+    }
+
+    .geo-cube {
+      width: 60px;
+      height: 60px;
+      animation: geoFloat 8s ease-in-out infinite, geoSpin 20s linear infinite;
+    }
+
+    .geo-ring {
+      width: 80px;
+      height: 80px;
+      animation: geoFloat 10s ease-in-out infinite 2s, geoSpin 25s linear infinite reverse;
+    }
+
+    .geo-tri {
+      width: 50px;
+      height: 50px;
+      animation: geoFloat 7s ease-in-out infinite 1s, geoSpin 18s linear infinite;
+    }
+
+    .geo-diamond {
+      width: 45px;
+      height: 45px;
+      animation: geoFloat 9s ease-in-out infinite 3s, geoSpin 22s linear infinite reverse;
+    }
+
+    @keyframes geoFloat {
+
+      0%,
+      100% {
+        transform: translateY(0) translateX(0);
+      }
+
+      25% {
+        transform: translateY(-20px) translateX(10px);
+      }
+
+      50% {
+        transform: translateY(-8px) translateX(-15px);
+      }
+
+      75% {
+        transform: translateY(-25px) translateX(5px);
+      }
+    }
+
+    @keyframes geoSpin {
+      from {
+        rotate: 0deg;
+      }
+
+      to {
+        rotate: 360deg;
+      }
+    }
+
+    /* ═══ VOICE BUTTON (PHONE) ═══ */
+    .app-voice-btn {
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--green), var(--green-light));
+      border: none;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      position: relative;
+      box-shadow: 0 2px 10px rgba(45, 106, 79, 0.4);
+      transition: all 0.3s;
+      flex-shrink: 0;
+    }
+
+    .app-voice-btn svg {
+      width: 14px;
+      height: 14px;
+      fill: white;
+    }
+
+    .app-voice-btn:hover {
+      transform: scale(1.15);
+      box-shadow: 0 4px 18px rgba(45, 106, 79, 0.6);
+    }
+
+    .app-voice-btn.listening {
+      background: linear-gradient(135deg, #e85d26, #f47a4a);
+      box-shadow: 0 0 0 0 rgba(232, 93, 38, 0.5);
+      animation: voicePulsePhone 1.2s ease-in-out infinite;
+    }
+
+    @keyframes voicePulsePhone {
+      0% {
+        box-shadow: 0 0 0 0 rgba(232, 93, 38, 0.5);
+      }
+
+      70% {
+        box-shadow: 0 0 0 10px rgba(232, 93, 38, 0);
+      }
+
+      100% {
+        box-shadow: 0 0 0 0 rgba(232, 93, 38, 0);
+      }
+    }
+
+    .app-input-row {
+      display: flex;
+      gap: 6px;
+      align-items: center;
+    }
+
+    /* ═══ HERO TITLE GLOW ═══ */
+    .hero-title-glow {
+      position: relative;
+    }
+
+    .hero-title-glow::before {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 300px;
+      height: 120px;
+      background: radial-gradient(ellipse, rgba(232, 93, 38, 0.15), transparent 70%);
+      transform: translate(-50%, -50%);
+      filter: blur(40px);
+      pointer-events: none;
+      animation: titleGlow 4s ease-in-out infinite;
+    }
+
+    @keyframes titleGlow {
+
+      0%,
+      100% {
+        opacity: 0.5;
+        transform: translate(-50%, -50%) scale(1);
+      }
+
+      50% {
+        opacity: 1;
+        transform: translate(-50%, -50%) scale(1.2);
+      }
+    }
+
+    /* ═══ SCROLL INDICATOR ═══ */
+    .scroll-indicator {
+      position: absolute;
+      bottom: 30px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 5;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+      opacity: 0.5;
+      animation: fadeSlideUp 1s 1.5s both;
+    }
+
+    .scroll-indicator span {
+      font-size: 0.7rem;
+      color: rgba(255, 255, 255, 0.4);
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+    }
+
+    .scroll-mouse {
+      width: 24px;
+      height: 38px;
+      border: 2px solid rgba(255, 255, 255, 0.25);
+      border-radius: 12px;
+      position: relative;
+    }
+
+    .scroll-mouse::after {
+      content: '';
+      width: 4px;
+      height: 8px;
+      background: var(--orange);
+      border-radius: 2px;
+      position: absolute;
+      top: 6px;
+      left: 50%;
+      transform: translateX(-50%);
+      animation: scrollWheel 2s ease-in-out infinite;
+    }
+
+    @keyframes scrollWheel {
+      0% {
+        transform: translateX(-50%) translateY(0);
+        opacity: 1;
+      }
+
+      100% {
+        transform: translateX(-50%) translateY(14px);
+        opacity: 0;
+      }
+    }
+
+    @media(max-width:768px) {
+      .scroll-indicator {
+        display: none;
+      }
+
+      .geo-shape {
+        display: none;
+      }
+
+      .float-el {
+        display: none;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+  <!-- ─── NAV ─────────────────────────────────────────────────── -->
+  <nav id="navbar">
+    <a href="#" class="nav-logo">
+      <div class="nav-logo-icon">🍳</div>
+      <span class="nav-logo-text">Chef<span>AI</span></span>
+    </a>
+    <div class="nav-links">
+      <a href="#features">Features</a>
+      <a href="#how-it-works">How It Works</a>
+      <a href="#proof">Testimonials</a>
+      <a href="#creator">Creator</a>
+      <a href="auth.html" class="nav-cta">Try It Free</a>
+    </div>
+    <div class="hamburger" id="hamburger" onclick="toggleMenu()">
+      <span></span><span></span><span></span>
+    </div>
+  </nav>
+  <div class="mobile-menu" id="mobileMenu">
+    <a href="#features" onclick="closeMenu()">Features</a>
+    <a href="#how-it-works" onclick="closeMenu()">How It Works</a>
+    <a href="#proof" onclick="closeMenu()">Testimonials</a>
+    <a href="#creator" onclick="closeMenu()">Creator</a>
+    <a href="auth.html" onclick="closeMenu()">Try It Free</a>
+  </div>
+
+  <!-- ─── HERO ─────────────────────────────────────────────────── -->
+  <section class="hero" id="home">
+
+    <!-- VIDEO BACKGROUND -->
+    <div class="hero-video-bg">
+      <video autoplay muted loop playsinline preload="auto" id="heroBgVideo">
+        <source src="bg.mp4" type="video/mp4">
+        <!-- Fallback: if video doesn't load, dark bg shows naturally -->
+      </video>
+    </div>
+    <!-- Overlay layers -->
+    <div class="hero-video-overlay"></div>
+    <div class="hero-video-gradient"></div>
+    <div class="hero-video-grid"></div>
+    <div class="hero-video-fade"></div>
+
+    <!-- Original canvas & particles on top -->
+    <canvas id="hero3dCanvas"></canvas>
+    <div class="particles-container" id="heroParticles"></div>
+    <div class="hero-orb o1"></div>
+    <div class="hero-orb o2"></div>
+    <div class="hero-orb o3"></div>
+
+    <!-- 3D Geometric Shapes -->
+    <div class="geo-shape geo-cube" style="top:15%;left:8%;opacity:0.14;">
+      <svg viewBox="0 0 60 60" fill="none">
+        <rect x="10" y="10" width="40" height="40" rx="6" stroke="rgba(232,93,38,0.6)" stroke-width="2" />
+        <line x1="10" y1="10" x2="20" y2="2" stroke="rgba(232,93,38,0.4)" stroke-width="1.5" />
+        <line x1="50" y1="10" x2="58" y2="2" stroke="rgba(232,93,38,0.4)" stroke-width="1.5" />
+        <line x1="50" y1="50" x2="58" y2="42" stroke="rgba(232,93,38,0.4)" stroke-width="1.5" />
+      </svg>
+    </div>
+    <div class="geo-shape geo-ring" style="top:70%;right:5%;opacity:0.1;">
+      <svg viewBox="0 0 80 80" fill="none">
+        <circle cx="40" cy="40" r="30" stroke="rgba(82,183,136,0.5)" stroke-width="2" />
+        <circle cx="40" cy="40" r="20" stroke="rgba(82,183,136,0.3)" stroke-width="1.5" />
+      </svg>
+    </div>
+    <div class="geo-shape geo-tri" style="bottom:20%;left:15%;opacity:0.1;">
+      <svg viewBox="0 0 50 50" fill="none">
+        <polygon points="25,5 45,45 5,45" stroke="rgba(232,93,38,0.5)" stroke-width="2" fill="none" />
+      </svg>
+    </div>
+
+    <div class="hero-inner">
+      <div class="hero-left">
+        <div class="hero-badge">
+          <div class="hero-badge-dot"></div>AI-Powered Cooking Intelligence
+        </div>
+        <h1 class="hero-title hero-title-glow">
+          Cook Smarter,<br><em>Waste Nothing</em>,<br>
+          <span class="line-accent">Eat Better Every Day.</span>
+        </h1>
+        <p class="hero-sub">Just tell us what's in your fridge. Our AI instantly generates personalized recipes, handles
+          substitutions, and guides you — hands-free — to a delicious meal.</p>
+        <div class="hero-actions">
+          <button class="btn-primary" onclick="triggerHeroGenerate()">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+              stroke-linecap="round" stroke-linejoin="round">
+              <path
+                d="M12 2L15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2z" />
+            </svg>
+            Generate a Recipe
+          </button>
+          <a href="#how-it-works" class="btn-secondary">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+              stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="10" />
+              <polygon points="10 8 16 12 10 16 10 8" />
+            </svg>
+            See How It Works
+          </a>
+        </div>
+        <div class="hero-stats">
+          <div class="hero-stat">
+            <div class="hero-stat-num">50+</div>
+            <div class="hero-stat-label">Cuisines Supported</div>
+          </div>
+          <div class="hero-stat-divider"></div>
+          <div class="hero-stat">
+            <div class="hero-stat-num">AI</div>
+            <div class="hero-stat-label">Anthropic + Gemini</div>
+          </div>
+          <div class="hero-stat-divider"></div>
+          <div class="hero-stat">
+            <div class="hero-stat-num">0%</div>
+            <div class="hero-stat-label">Food Waste Goal</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 3D PHONE — hidden on mobile via CSS -->
+      <div class="hero-right">
+        <div class="geo-shape geo-diamond" style="top:-10px;right:-50px;opacity:0.2;">
+          <svg viewBox="0 0 45 45" fill="none">
+            <rect x="22.5" y="2" width="29" height="29" rx="4" transform="rotate(45 22.5 2)"
+              stroke="rgba(232,93,38,0.6)" stroke-width="2" />
+          </svg>
+        </div>
+        <div class="phone-scene">
+          <div class="phone-glow"></div>
+          <div class="phone">
+            <div class="phone-notch">
+              <div class="notch-cam"></div>
+              <div class="notch-speaker"></div>
+              <div class="notch-cam"></div>
+            </div>
+            <div class="phone-btn-right"></div>
+            <div class="phone-btn-left1"></div>
+            <div class="phone-btn-left2"></div>
+            <div class="phone-screen">
+              <div class="app-nav">
+                <div class="app-logo">Chef<span>AI</span></div>
+                <div class="app-badge">● AI Ready</div>
+              </div>
+              <div class="app-hero-text">
+                <h3>What's in your fridge?</h3>
+                <p>Add ingredients &amp; AI generates your recipe</p>
+              </div>
+              <div class="app-input-area">
+                <div class="app-input-row">
+                  <div class="app-input" style="flex:1;">
+                    <span class="app-input-icon"><svg width="12" height="12" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2">
+                        <circle cx="11" cy="11" r="8" />
+                        <line x1="21" y1="21" x2="16.65" y2="16.65" />
+                      </svg></span>
+                    <span>Add ingredient…</span>
+                  </div>
+                  <button class="app-voice-btn" id="phoneVoiceBtn" onclick="togglePhoneVoice()" title="Voice input">
+                    <svg viewBox="0 0 24 24">
+                      <path
+                        d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3zM19 10v2a7 7 0 0 1-14 0v-2M12 19v4M8 23h8" />
+                    </svg>
+                  </button>
+                </div>
+                <div class="app-ing-row">
+                  <div class="app-ing">🧅 Onion</div>
+                  <div class="app-ing">🍅 Tomato</div>
+                  <div class="app-ing">🌶️ Chilli</div>
+                  <div class="app-ing">🫛 Paneer</div>
+                </div>
+              </div>
+              <button class="app-gen-btn" onclick="phoneGenerate()"><span class="btn-shimmer"></span><span
+                  id="phoneGenText">✦ Generate with AI</span></button>
+              <div class="app-result" id="phoneResult">
+                <div class="app-result-top">
+                  <div class="app-result-emoji" id="phoneEmoji">🍛</div>
+                  <div>
+                    <div class="app-result-name" id="phoneName">Paneer Tikka Masala</div>
+                    <div class="app-result-meta" id="phoneMeta">North Indian · 30 min</div>
+                  </div>
+                </div>
+                <div class="app-result-pills"><span class="app-pill">High Protein</span><span
+                    class="app-pill">Vegetarian</span><span class="app-pill o">AI Crafted</span></div>
+                <div class="app-steps-label">Quick Steps</div>
+                <div class="app-step">
+                  <div class="app-step-dot">1</div>
+                  <div class="app-step-text">Marinate paneer in spiced yoghurt 20 min</div>
+                </div>
+                <div class="app-step">
+                  <div class="app-step-dot">2</div>
+                  <div class="app-step-text">Sauté onion &amp; tomato base with spices</div>
+                </div>
+                <div class="app-step">
+                  <div class="app-step-dot">3</div>
+                  <div class="app-step-text">Add paneer &amp; cream, simmer 8 min</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="scroll-indicator">
+      <div class="scroll-mouse"></div>
+      <span>Scroll</span>
+    </div>
+  </section>
+
+  <!-- ─── MARQUEE ─────────────────────────────────────────────── -->
+  <div class="marquee-section">
+    <div class="marquee-track">
+      <div class="marquee-item">AI Recipe Generation</div>
+      <div class="marquee-item">Voice Input</div>
+      <div class="marquee-item">50+ Cuisines</div>
+      <div class="marquee-item">Smart Substitutions</div>
+      <div class="marquee-item">Zero Food Waste</div>
+      <div class="marquee-item">Anthropic Claude</div>
+      <div class="marquee-item">Google Gemini</div>
+      <div class="marquee-item">Supabase Cloud</div>
+      <div class="marquee-item">AI Recipe Generation</div>
+      <div class="marquee-item">Voice Input</div>
+      <div class="marquee-item">50+ Cuisines</div>
+      <div class="marquee-item">Smart Substitutions</div>
+      <div class="marquee-item">Zero Food Waste</div>
+      <div class="marquee-item">Anthropic Claude</div>
+      <div class="marquee-item">Google Gemini</div>
+      <div class="marquee-item">Supabase Cloud</div>
+    </div>
+  </div>
+
+  <!-- ─── FEATURES ──────────────────────────────────────────────── -->
+  <section class="features-section" id="features">
+    <div class="geo-shape geo-ring" style="top:10%;right:3%;opacity:0.05;">
+      <svg viewBox="0 0 80 80" fill="none">
+        <circle cx="40" cy="40" r="30" stroke="rgba(232,93,38,0.4)" stroke-width="2" />
+        <circle cx="40" cy="40" r="16" stroke="rgba(232,93,38,0.2)" stroke-width="1.5" />
+      </svg>
+    </div>
+    <div class="geo-shape geo-tri" style="bottom:8%;left:4%;opacity:0.04;">
+      <svg viewBox="0 0 50 50" fill="none">
+        <polygon points="25,5 45,45 5,45" stroke="rgba(45,106,79,0.4)" stroke-width="2" fill="none" />
+      </svg>
+    </div>
+    <div class="features-header reveal">
+      <div class="section-label">Features</div>
+      <h2 class="section-title">Intelligent Cooking,<br>Simplified</h2>
+      <p class="section-desc" style="margin:0 auto;text-align:center;">Everything you need to go from random ingredients
+        to a perfect meal — powered by artificial intelligence.</p>
+    </div>
+    <div class="features-grid">
+      <div class="feature-card glow-border">
+        <div class="feature-icon orange"><svg width="28" height="28" viewBox="0 0 24 24" fill="none"
+            stroke="var(--orange)" stroke-width="2" stroke-linecap="round">
+            <path
+              d="M12 2L15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2z" />
+          </svg></div>
+        <h3>AI Recipe Matching</h3>
+        <p>Enter any ingredients and get perfectly curated recipes from Anthropic Claude or Google Gemini in seconds.
+        </p>
+        <span class="feature-tag">Core Feature</span>
+      </div>
+      <div class="feature-card glow-border">
+        <div class="feature-icon green"><svg width="28" height="28" viewBox="0 0 24 24" fill="none"
+            stroke="var(--green)" stroke-width="2" stroke-linecap="round">
+            <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z" />
+            <path d="M19 10v2a7 7 0 0 1-14 0v-2" />
+            <line x1="12" y1="19" x2="12" y2="23" />
+            <line x1="8" y1="23" x2="16" y2="23" />
+          </svg></div>
+        <h3>Voice Input</h3>
+        <p>Just speak your ingredients while your hands are busy — our voice recognition captures everything naturally.
+        </p>
+        <span class="feature-tag">Hands-Free</span>
+      </div>
+      <div class="feature-card glow-border">
+        <div class="feature-icon brown"><svg width="28" height="28" viewBox="0 0 24 24" fill="none"
+            stroke="var(--brown)" stroke-width="2" stroke-linecap="round">
+            <path
+              d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z" />
+          </svg></div>
+        <h3>Smart Substitutions</h3>
+        <p>Missing an ingredient? AI suggests the best alternatives based on flavor profiles and nutritional balance.
+        </p>
+        <span class="feature-tag">AI-Powered</span>
+      </div>
+      <div class="feature-card glow-border">
+        <div class="feature-icon orange"><svg width="28" height="28" viewBox="0 0 24 24" fill="none"
+            stroke="var(--orange)" stroke-width="2" stroke-linecap="round">
+            <circle cx="12" cy="12" r="10" />
+            <path d="M12 6v6l4 2" />
+          </svg></div>
+        <h3>Instant Generation</h3>
+        <p>Full recipes with ingredients, steps, and nutritional info generated in under 3 seconds by advanced AI
+          models.</p>
+        <span class="feature-tag">Lightning Fast</span>
+      </div>
+      <div class="feature-card glow-border">
+        <div class="feature-icon green"><svg width="28" height="28" viewBox="0 0 24 24" fill="none"
+            stroke="var(--green)" stroke-width="2" stroke-linecap="round">
+            <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z" />
+            <polyline points="17 21 17 13 7 13 7 21" />
+            <polyline points="7 3 7 8 15 8" />
+          </svg></div>
+        <h3>Cloud Save</h3>
+        <p>Save your favourite AI-generated recipes to Supabase. Access them anytime, anywhere from any device.</p>
+        <span class="feature-tag">Supabase</span>
+      </div>
+      <div class="feature-card glow-border">
+        <div class="feature-icon brown"><svg width="28" height="28" viewBox="0 0 24 24" fill="none"
+            stroke="var(--brown)" stroke-width="2" stroke-linecap="round">
+            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+          </svg></div>
+        <h3>Diet & Allergy Filters</h3>
+        <p>Vegetarian, vegan, gluten-free — filter by any dietary need and never worry about allergens again.</p>
+        <span class="feature-tag">Personalized</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─── HOW IT WORKS (3D CARDS) ──────────────────────────────── -->
+  <section class="how-section" id="how-it-works">
+    <div class="how-header reveal">
+      <div class="section-label">How It Works</div>
+      <h2 class="section-title">From Empty Fridge<br>to Plated Perfection</h2>
+      <p class="section-desc">Four simple steps. Zero cooking stress. Click any card to explore.</p>
+    </div>
+    <div class="how-cards-grid">
+      <div class="how-card-3d active" id="hcard-0" onclick="setHowCard(0,true)">
+        <span class="card-active-badge">Active</span>
+        <div class="card-num">01</div>
+        <div class="card-icon-wrap">🥘</div>
+        <div class="card-title">Add Your Ingredients</div>
+        <div class="card-desc">Type or speak what you have — tomatoes, leftover rice, anything. The app handles any
+          combination.</div>
+        <div class="card-progress">
+          <div class="card-progress-fill" id="cpfill-0"></div>
+        </div>
+      </div>
+      <div class="how-card-3d" id="hcard-1" onclick="setHowCard(1,true)">
+        <span class="card-active-badge">Active</span>
+        <div class="card-num">02</div>
+        <div class="card-icon-wrap">🤖</div>
+        <div class="card-title">AI Analyses &amp; Matches</div>
+        <div class="card-desc">Anthropic Claude or Gemini processes your input and selects the most delicious recipe
+          matches.</div>
+        <div class="card-progress">
+          <div class="card-progress-fill" id="cpfill-1"></div>
+        </div>
+      </div>
+      <div class="how-card-3d" id="hcard-2" onclick="setHowCard(2,true)">
+        <span class="card-active-badge">Active</span>
+        <div class="card-num">03</div>
+        <div class="card-icon-wrap">⚙️</div>
+        <div class="card-title">Customize Your Recipe</div>
+        <div class="card-desc">Adjust servings, swap ingredients, filter by diet or cuisine. Make it completely yours.
+        </div>
+        <div class="card-progress">
+          <div class="card-progress-fill" id="cpfill-2"></div>
+        </div>
+      </div>
+      <div class="how-card-3d" id="hcard-3" onclick="setHowCard(3,true)">
+        <span class="card-active-badge">Active</span>
+        <div class="card-num">04</div>
+        <div class="card-icon-wrap">💾</div>
+        <div class="card-title">Cook &amp; Save</div>
+        <div class="card-desc">Follow step-by-step instructions. Save your favourite AI recipes to Supabase for future
+          access.</div>
+        <div class="card-progress">
+          <div class="card-progress-fill" id="cpfill-3"></div>
+        </div>
+      </div>
+    </div>
+    <div class="how-panel-container reveal">
+      <div class="how-panel active" id="hpanel-0">
+        <div>
+          <div class="panel-info-title">🥘 Add Your Ingredients</div>
+          <div class="panel-info-desc">Just type or speak what you have at home. Onion, tomato, leftover rice — anything
+            goes. Our AI understands natural language and handles every combination with ease. No more staring at your
+            fridge.</div>
+        </div>
+        <div class="panel-demo">
+          <div class="sim-header">🥘 Try It — Add Ingredients</div>
+          <div class="sim-input-row"><input class="sim-input" id="simInput" type="text" placeholder="e.g. garlic, rice…"
+              onkeydown="if(event.key==='Enter')simAddIngredient()"><button class="sim-add"
+              onclick="simAddIngredient()">Add</button></div>
+          <div class="sim-tags" id="simTags">
+            <div class="sim-tag">🧅 Onion</div>
+            <div class="sim-tag">🍅 Tomato</div>
+            <div class="sim-tag">🌶️ Chilli</div>
+            <div class="sim-tag">🫛 Paneer</div>
+          </div>
+          <div class="sim-mic">
+            <div class="mic-icon">🎙️</div><span>Say your ingredients — voice input is ready</span>
+          </div>
+        </div>
+      </div>
+      <div class="how-panel" id="hpanel-1">
+        <div>
+          <div class="panel-info-title">🤖 AI Analyses Your Pantry</div>
+          <div class="panel-info-desc">Our AI connects to Anthropic Claude or Google Gemini and scans your ingredient
+            list to find the most fitting, delicious recipes. It checks cuisine patterns, nutritional balance, and
+            cooking time — all in seconds.</div>
+        </div>
+        <div class="panel-demo">
+          <div class="sim-header">🤖 AI Analysing…</div>
+          <div class="ai-log" id="aiLog">
+            <div class="ai-log-line"><span class="dot dot-pending"></span><span>Connecting to Anthropic API…</span>
+            </div>
+            <div class="ai-log-line"><span class="dot dot-pending"></span><span>Scanning ingredient list…</span></div>
+            <div class="ai-log-line"><span class="dot dot-pending"></span><span>Ingredients: <span
+                  class="text-hl">["onion","tomato","paneer"]</span></span></div>
+            <div class="ai-log-line"><span class="dot dot-pending"></span><span>Analysing cuisine patterns…</span></div>
+            <div class="ai-log-line"><span class="dot dot-pending"></span><span>Checking nutritional balance…</span>
+            </div>
+            <div class="ai-log-line"><span class="dot dot-pending"></span><span class="text-ok">✓ Recipe: <span
+                  class="text-hl">Paneer Tikka Masala</span></span></div>
+            <div class="ai-log-line"><span class="dot dot-pending"></span><span class="text-ok">✓ Substitutions: <span
+                  class="text-hl">3 options ready</span></span></div>
+          </div>
+          <div class="ai-match-card" id="aiMatchCard" style="opacity:0;transition:opacity 0.5s">
+            <div class="ai-match-title">🍛 Paneer Tikka Masala</div>
+            <div class="ai-match-sub">North Indian · 30 min · 410 kcal/serving</div>
+            <div class="ai-conf"><span class="ai-conf-label">Match confidence</span>
+              <div class="ai-conf-bar">
+                <div class="ai-conf-fill" id="confFill"></div>
+              </div><span class="ai-conf-val">94%</span>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="how-panel" id="hpanel-2">
+        <div>
+          <div class="panel-info-title">⚙️ Make It Your Own</div>
+          <div class="panel-info-desc">Cooking for one, or feeding a crowd? Slide the servings and every ingredient
+            quantity updates instantly. Filter by dietary preference — the recipe bends completely to your needs.</div>
+        </div>
+        <div class="panel-demo">
+          <div class="sim-header">⚙️ Customize</div>
+          <div class="cust-row">
+            <div class="cust-label">Servings</div>
+            <div class="cust-slider-wrap"><input type="range" class="cust-slider" id="servSlider" min="1" max="10"
+                value="4" oninput="updateServings(this.value)"><span class="cust-val" id="servVal">4</span></div>
+          </div>
+          <div class="cust-row">
+            <div class="cust-label">Dietary Filter</div>
+            <div class="cust-chips">
+              <div class="cust-chip sel" onclick="toggleChip(this)">Vegetarian</div>
+              <div class="cust-chip" onclick="toggleChip(this)">High Protein</div>
+              <div class="cust-chip" onclick="toggleChip(this)">Low Carb</div>
+              <div class="cust-chip" onclick="toggleChip(this)">Vegan</div>
+            </div>
+          </div>
+          <div class="scaled-preview">
+            <div class="scaled-item"><span>🫛 Paneer</span><span class="qty" id="sPaneer">200g</span></div>
+            <div class="scaled-item"><span>🍅 Tomatoes</span><span class="qty" id="sTomato">2 pcs</span></div>
+            <div class="scaled-item"><span>🧅 Onion</span><span class="qty" id="sOnion">1 large</span></div>
+            <div class="scaled-item"><span>🌶️ Chilli</span><span class="qty" id="sChilli">2 pcs</span></div>
+          </div>
+        </div>
+      </div>
+      <div class="how-panel" id="hpanel-3">
+        <div>
+          <div class="panel-info-title">💾 Cook, Save &amp; Revisit</div>
+          <div class="panel-info-desc">Follow clear, numbered instructions while you cook. Once done, save the recipe to
+            Supabase — your personal cookbook in the cloud. Share it, revisit it, or scale it again next time.</div>
+        </div>
+        <div class="panel-demo">
+          <div class="sim-header">📋 Cook &amp; Save</div>
+          <div class="save-recipe">
+            <div class="save-recipe-name">🍛 Paneer Tikka Masala</div>
+            <div class="save-steps">
+              <div class="save-step">
+                <div class="save-step-num">1</div>
+                <div class="save-step-text">Marinate paneer cubes with yoghurt &amp; spices for 20 min</div>
+              </div>
+              <div class="save-step">
+                <div class="save-step-num">2</div>
+                <div class="save-step-text">Sauté onions until golden, add tomato &amp; cook 10 min</div>
+              </div>
+              <div class="save-step">
+                <div class="save-step-num">3</div>
+                <div class="save-step-text">Add spices, paneer &amp; cream. Simmer 8 min. Serve hot</div>
+              </div>
+            </div>
+          </div>
+          <div class="save-actions" id="saveActions"><button class="save-btn primary" onclick="simulateSave()">💾 Save
+              to Supabase</button><button class="save-btn secondary">📤 Share Recipe</button></div>
+          <div class="save-success" id="saveSuccess">
+            <div class="save-success-icon">✅</div>
+            <div class="save-success-text">Recipe saved successfully!</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─── TESTIMONIALS ──────────────────────────────────────────── -->
+  <section class="proof-section" id="proof">
+    <div class="proof-header reveal">
+      <div class="section-label">Testimonials</div>
+      <h2 class="section-title">Loved by Home Cooks<br>&amp; Food Enthusiasts</h2>
+      <p class="section-desc" style="margin:0 auto;text-align:center;">Real stories from people who stopped staring at
+        their fridge.</p>
+    </div>
+    <div class="proof-grid">
+      <div class="proof-card reveal">
+        <div class="proof-stars">★★★★★</div>
+        <p class="proof-text">"I had random veggies and ChefAI turned them into the most incredible sabzi in minutes. My
+          family thought I'd taken a cooking class!"</p>
+        <div class="proof-author">
+          <div class="proof-avatar" style="background:rgba(232,93,38,0.08)">👩</div>
+          <div>
+            <div class="proof-name">Priya Mehta</div>
+            <div class="proof-role">Home Chef · Mumbai</div>
+          </div>
+        </div>
+      </div>
+      <div class="proof-card reveal" style="transition-delay:0.1s">
+        <div class="proof-stars">★★★★★</div>
+        <p class="proof-text">"The voice input is a game-changer. I just shout ingredients while cooking and it
+          generates the recipe. Feels like magic every single time."</p>
+        <div class="proof-author">
+          <div class="proof-avatar" style="background:rgba(45,106,79,0.08)">👨</div>
+          <div>
+            <div class="proof-name">Arjun Sharma</div>
+            <div class="proof-role">Software Engineer · Pune</div>
+          </div>
+        </div>
+      </div>
+      <div class="proof-card reveal" style="transition-delay:0.2s">
+        <div class="proof-stars">★★★★★</div>
+        <p class="proof-text">"Zero food waste since I started using ChefAI. It always finds a recipe for whatever is
+          left in my fridge at the end of the week. Brilliant."</p>
+        <div class="proof-author">
+          <div class="proof-avatar" style="background:rgba(92,61,46,0.07)">👩</div>
+          <div>
+            <div class="proof-name">Sneha Kulkarni</div>
+            <div class="proof-role">Nutritionist · Bengaluru</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─── IMPACT ─────────────────────────────────────────────────── -->
+  <section class="impact-section">
+    <div class="impact-inner">
+      <div class="impact-stat reveal">
+        <div class="impact-num" data-count="2400">0</div>
+        <div class="impact-label">Recipes Generated</div>
+      </div>
+      <div class="impact-stat reveal" style="transition-delay:0.1s">
+        <div class="impact-num" data-count="50">0</div>
+        <div class="impact-label">Cuisines Supported</div>
+      </div>
+      <div class="impact-stat reveal" style="transition-delay:0.2s">
+        <div class="impact-num" data-count="98">0</div>
+        <div class="impact-label">% Accuracy Rate</div>
+      </div>
+      <div class="impact-stat reveal" style="transition-delay:0.3s">
+        <div class="impact-num" data-count="340">0</div>
+        <div class="impact-label">Happy Cooks</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─── CREATOR ───────────────────────────────────────────────── -->
+  <section class="creator-section" id="creator">
+    <div class="creator-inner">
+      <div class="creator-left reveal-left">
+        <div class="creator-card">
+          <div class="creator-avatar">👨‍💻</div>
+          <div class="creator-name">Om Sankhe</div>
+          <div class="creator-role">Project Developer</div>
+          <div class="creator-info-grid">
+            <div class="creator-info-item">
+              <div class="creator-info-label">Program</div>
+              <div class="creator-info-value">TY BSC IT</div>
+            </div>
+            <div class="creator-info-item">
+              <div class="creator-info-label">Domain</div>
+              <div class="creator-info-value">AI + Web Dev</div>
+            </div>
+            <div class="creator-info-item">
+              <div class="creator-info-label">Specialization</div>
+              <div class="creator-info-value">Full Stack</div>
+            </div>
+            <div class="creator-info-item">
+              <div class="creator-info-label">Project Type</div>
+              <div class="creator-info-value">Final Year</div>
+            </div>
+          </div>
+          <div class="creator-quote">"Every great meal starts with great ingredients — and great code."</div>
+        </div>
+        <div class="mentor-card">
+          <div class="mentor-avatar">👩‍🏫</div>
+          <div>
+            <div class="mentor-label">Project Mentor</div>
+            <div class="mentor-name">Komal Bhanushali</div>
+            <div class="mentor-desc">Faculty Guide &amp; Project Supervisor</div>
+            <span class="mentor-roll">Roll No: 26</span>
+          </div>
+        </div>
+      </div>
+      <div class="creator-right reveal-right">
+        <div class="section-label">Behind the Project</div>
+        <h2 class="section-title">The Mind &amp; Vision<br>Behind ChefAI</h2>
+        <p>ChefAI was born from a simple problem: too many people stare into their fridges every day with no idea what
+          to cook. Om Sankhe set out to fix that — combining AI, voice technology, and thoughtful UX into one seamless
+          cooking companion.</p>
+        <p>Built as a final year project for TY BSC IT, ChefAI integrates Anthropic Claude and Google Gemini for
+          intelligent recipe generation, with Supabase powering the cloud backend — all under the expert guidance of
+          mentor Komal Bhanushali.</p>
+        <div class="project-meta">
+          <div class="project-meta-item"><span class="project-meta-icon">🎓</span><span
+              class="project-meta-text"><strong>TY BSC IT</strong> — Final Year Major Project</span></div>
+          <div class="project-meta-item"><span class="project-meta-icon">🤖</span><span
+              class="project-meta-text">AI-first approach with <strong>Anthropic + Gemini APIs</strong></span></div>
+          <div class="project-meta-item"><span class="project-meta-icon">🗃️</span><span
+              class="project-meta-text">Cloud-powered by <strong>Supabase</strong> — real-time database</span></div>
+          <div class="project-meta-item"><span class="project-meta-icon">🌟</span><span
+              class="project-meta-text">Mentored by <strong>Komal Bhanushali</strong> (Roll No. 26)</span></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─── FUTURE SCOPE ─────────────────────────────────────────── -->
+  <section class="future-section" id="future">
+    <div class="future-inner">
+      <div class="future-header reveal">
+        <div class="section-label">Future Scope</div>
+        <h2 class="section-title">What's Cooking Next</h2>
+        <p class="section-desc" style="margin:0 auto;text-align:center;">ChefAI is just getting started. Here's what the
+          next phase looks like.</p>
+      </div>
+      <div class="future-grid">
+        <div class="future-card reveal">
+          <div class="future-num">01</div>
+          <div>
+            <h4>Image-Based Ingredient Recognition</h4>
+            <p>Point your camera at your fridge and let AI identify all ingredients automatically — no typing required
+              at all.</p>
+          </div>
+        </div>
+        <div class="future-card reveal">
+          <div class="future-num">02</div>
+          <div>
+            <h4>AI-Generated Custom Recipes</h4>
+            <p>Go beyond known dishes — have Claude compose entirely new, never-before-seen recipes tailored to your
+              exact taste profile.</p>
+          </div>
+        </div>
+        <div class="future-card reveal">
+          <div class="future-num">03</div>
+          <div>
+            <h4>Global Cuisine Expansion</h4>
+            <p>Deeper multilingual support with authentic regional recipes — from Kolhapuri to Korean, Moroccan to
+              Mexican.</p>
+          </div>
+        </div>
+        <div class="future-card reveal">
+          <div class="future-num">04</div>
+          <div>
+            <h4>Step-by-Step Video Instructions</h4>
+            <p>AI-narrated video walkthroughs generated on the fly, so you can watch and cook simultaneously without
+              reading.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─── CTA ───────────────────────────────────────────────────── -->
+  <section class="cta-section" id="try-it">
+    <div class="cta-inner">
+      <h2>Ready to Cook Something<br>Extraordinary?</h2>
+      <p>Open your fridge, tell ChefAI what's inside, and let artificial intelligence turn those random ingredients into
+        your next favourite meal.</p>
+      <a href="auth.html" class="btn-white">🍳 Start Generating Recipes</a>
+    </div>
+  </section>
+
+  <!-- ─── FOOTER ────────────────────────────────────────────────── -->
+  <footer>
+    <div class="footer-inner">
+      <div class="footer-top">
+        <div class="footer-brand">
+          <a href="#" class="nav-logo">
+            <div class="nav-logo-icon">🍳</div>
+            <span class="nav-logo-text">Chef<span>AI</span></span>
+          </a>
+          <div class="footer-tagline">AI-Enhanced Recipe Generator</div>
+        </div>
+        <div class="footer-links">
+          <a href="#features">Features</a>
+          <a href="#how-it-works">How It Works</a>
+          <a href="#proof">Testimonials</a>
+          <a href="#creator">Creator</a>
+          <a href="#future">Future Scope</a>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <p>© 2025 ChefAI · Built as TY BSC IT Final Year Project</p>
+        <div class="footer-credit">Made with ❤️ by Om Sankhe · Mentored by Komal Bhanushali</div>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+
+    // ── PHONE HERO GENERATE ──────────────────────────────────────
+    const phoneRecipes = [
+      { emoji: '🍛', name: 'Paneer Tikka Masala', meta: 'North Indian · 30 min' },
+      { emoji: '🥘', name: 'Shakshuka', meta: 'Middle Eastern · 25 min' },
+      { emoji: '🍝', name: 'Pasta Arrabbiata', meta: 'Italian · 20 min' },
+      { emoji: '🍲', name: 'Veggie Curry', meta: 'Pan-Asian · 35 min' },
+    ];
+    let phoneIdx = 0;
+    function phoneGenerate() {
+      const btn = document.getElementById('phoneGenText');
+      const result = document.getElementById('phoneResult');
+      if (!btn || !result) return;
+      btn.textContent = '⏳ Generating…';
+      result.style.opacity = '0';
+      result.style.transform = 'translateY(8px) scale(0.97)';
+      setTimeout(() => {
+        phoneIdx = (phoneIdx + 1) % phoneRecipes.length;
+        const r = phoneRecipes[phoneIdx];
+        const emojiEl = document.getElementById('phoneEmoji');
+        const nameEl = document.getElementById('phoneName');
+        const metaEl = document.getElementById('phoneMeta');
+        if (emojiEl) emojiEl.textContent = r.emoji;
+        if (nameEl) nameEl.textContent = r.name;
+        if (metaEl) metaEl.textContent = r.meta;
+        result.style.transition = 'all 0.4s cubic-bezier(0.34,1.56,0.64,1)';
+        result.style.opacity = '1';
+        result.style.transform = 'translateY(0) scale(1)';
+        btn.textContent = '✦ Generate Again';
+      }, 900);
+    }
+    setInterval(phoneGenerate, 4000);
+
+    // ── VIDEO: ensure autoplay works + fallback dark bg ──────────
+    (function () {
+      const video = document.getElementById('heroBgVideo');
+      if (!video) return;
+      // Attempt to play in case autoplay was blocked
+      const playPromise = video.play();
+      if (playPromise !== undefined) {
+        playPromise.catch(() => {
+          // Autoplay blocked — video stays hidden, dark bg shows naturally
+          video.style.display = 'none';
+        });
+      }
+      // On mobile, reduce video quality hint
+      if (window.innerWidth <= 768) {
+        video.style.display = 'none'; // hide on mobile to save bandwidth, dark bg looks great
+      }
+    })();
+
+    // ── NAVBAR SCROLL ────────────────────────────────────────────
+    const navbar = document.getElementById('navbar');
+    window.addEventListener('scroll', () => {
+      const scrolled = window.scrollY > 40;
+      navbar.classList.toggle('scrolled', scrolled);
+    }, { passive: true });
+
+    // ── MOBILE MENU ──────────────────────────────────────────────
+    function toggleMenu() {
+      const menu = document.getElementById('mobileMenu');
+      const ham = document.getElementById('hamburger');
+      const isOpen = menu.classList.toggle('open');
+      ham.classList.toggle('open', isOpen);
+    }
+    function closeMenu() {
+      document.getElementById('mobileMenu').classList.remove('open');
+      document.getElementById('hamburger').classList.remove('open');
+    }
+    document.addEventListener('click', (e) => {
+      const m = document.getElementById('mobileMenu');
+      const h = document.getElementById('hamburger');
+      if (m.classList.contains('open') && !m.contains(e.target) && !h.contains(e.target)) closeMenu();
+    });
+
+    // ── SCROLL ANIMATIONS ────────────────────────────────────────
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('visible');
+          observer.unobserve(entry.target);
+        }
+      });
+    }, { threshold: 0.12, rootMargin: '0px 0px -40px 0px' });
+    document.querySelectorAll('.reveal, .reveal-left, .reveal-right').forEach(el => observer.observe(el));
+
+    // Feature cards staggered
+    const fcObserver = new IntersectionObserver(entries => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.querySelectorAll('.feature-card').forEach((card, i) => {
+            setTimeout(() => card.classList.add('visible'), i * 100);
+          });
+          fcObserver.unobserve(entry.target);
+        }
+      });
+    }, { threshold: 0.1 });
+    const fg = document.querySelector('.features-grid');
+    if (fg) fcObserver.observe(fg);
+
+    // Proof cards staggered
+    const pcObserver = new IntersectionObserver(entries => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.querySelectorAll('.proof-card').forEach((card, i) => {
+            setTimeout(() => card.classList.add('visible'), i * 120);
+          });
+          pcObserver.unobserve(entry.target);
+        }
+      });
+    }, { threshold: 0.1 });
+    const pg = document.querySelector('.proof-grid');
+    if (pg) pcObserver.observe(pg);
+
+    // ── COUNTER ──────────────────────────────────────────────────
+    const countObserver = new IntersectionObserver(entries => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.querySelectorAll('[data-count]').forEach(el => {
+            const target = parseInt(el.dataset.count);
+            const suffix = target >= 98 ? '%' : '+';
+            let current = 0;
+            const step = Math.ceil(target / 40);
+            const interval = setInterval(() => {
+              current = Math.min(current + step, target);
+              el.textContent = current + suffix;
+              if (current >= target) clearInterval(interval);
+            }, 35);
+          });
+          countObserver.unobserve(entry.target);
+        }
+      });
+    }, { threshold: 0.3 });
+    const impactEl = document.querySelector('.impact-section');
+    if (impactEl) countObserver.observe(impactEl);
+
+    // ── HERO GENERATE BTN ────────────────────────────────────────
+    function triggerHeroGenerate() {
+      // scroll to how-it-works as a demo
+      document.getElementById('how-it-works').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+
+    // ── VOICE INPUT ──────────────────────────────────────────────
+    let recognition = null, isListening = false;
+    function toggleVoice() {
+      const btn = document.getElementById('heroVoiceBtn');
+      if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
+        alert('Voice input not supported in this browser. Please try Chrome.'); return;
+      }
+      if (isListening) {
+        if (recognition) recognition.stop();
+        isListening = false;
+        if (btn) { btn.classList.remove('listening'); btn.textContent = '🎙️'; }
+        return;
+      }
+      const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+      recognition = new SR();
+      recognition.lang = 'en-IN';
+      recognition.continuous = false;
+      recognition.interimResults = false;
+      recognition.onresult = (e) => {
+        const words = e.results[0][0].transcript.split(/[,\s]+/).filter(Boolean);
+        words.forEach(word => {
+          const tag = document.createElement('div');
+          tag.className = 'mockup-tag';
+          const emojiMap2 = { onion: '🧅', tomato: '🍅', chilli: '🌶️', paneer: '🫛', garlic: '🧄', potato: '🥔', rice: '🍚', egg: '🥚', cheese: '🧀', carrot: '🥕', spinach: '🥬', ginger: '🫚', mushroom: '🍄', corn: '🌽' };
+          const icon = emojiMap2[word.toLowerCase()] || '🍽️';
+          tag.innerHTML = `<span>${icon}</span> ${word}`;
+          const tagsEl = document.getElementById('heroTags');
+          if (tagsEl) tagsEl.appendChild(tag);
+        });
+      };
+      recognition.onerror = () => { isListening = false; if (btn) { btn.classList.remove('listening'); btn.textContent = '🎙️'; } };
+      recognition.onend = () => { isListening = false; if (btn) { btn.classList.remove('listening'); btn.textContent = '🎙️'; } };
+      recognition.start();
+      isListening = true;
+      if (btn) { btn.classList.add('listening'); btn.textContent = '⏹️'; }
+    }
+
+    // ══════════════════════════════════════════════════════════════
+    //  HOW IT WORKS — 3D CARD SYSTEM
+    // ══════════════════════════════════════════════════════════════
+    let howCurrentCard = 0;
+    let howAutoInterval = null;
+    let aiAnimRunning = false;
+    const CARD_DURATION = 5000;
+
+    function setHowCard(n, userClicked) {
+      if (userClicked) {
+        clearHowAuto();
+        howCurrentCard = n;
+        activateHowCard(n);
+        startHowAuto();
+      } else {
+        howCurrentCard = n;
+        activateHowCard(n);
+      }
+    }
+
+    function activateHowCard(n) {
+      document.querySelectorAll('.how-card-3d').forEach((el, i) => {
+        el.classList.toggle('active', i === n);
+      });
+      document.querySelectorAll('.how-panel').forEach((el, i) => {
+        el.classList.toggle('active', i === n);
+      });
+      for (let i = 0; i < 4; i++) {
+        const fill = document.getElementById('cpfill-' + i);
+        if (!fill) continue;
+        fill.style.transition = 'none';
+        fill.style.width = '0%';
+      }
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          const activeFill = document.getElementById('cpfill-' + n);
+          if (activeFill) {
+            activeFill.style.transition = `width ${CARD_DURATION}ms linear`;
+            activeFill.style.width = '100%';
+          }
+        });
+      });
+      if (n === 1) runAiAnimation();
+    }
+
+    function startHowAuto() {
+      howAutoInterval = setInterval(() => {
+        const next = (howCurrentCard + 1) % 4;
+        howCurrentCard = next;
+        activateHowCard(next);
+      }, CARD_DURATION);
+    }
+
+    function clearHowAuto() {
+      if (howAutoInterval) { clearInterval(howAutoInterval); howAutoInterval = null; }
+    }
+
+    const howObserver = new IntersectionObserver(entries => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          howCurrentCard = 0;
+          activateHowCard(0);
+          clearHowAuto();
+          startHowAuto();
+        } else {
+          clearHowAuto();
+          for (let i = 0; i < 4; i++) {
+            const fill = document.getElementById('cpfill-' + i);
+            if (fill) { fill.style.transition = 'none'; fill.style.width = '0%'; }
+          }
+        }
+      });
+    }, { threshold: 0.25 });
+    const howSection = document.querySelector('.how-section');
+    if (howSection) howObserver.observe(howSection);
+
+    // ── AI LOG ANIMATION ─────────────────────────────────────────
+    function runAiAnimation() {
+      if (aiAnimRunning) return;
+      aiAnimRunning = true;
+      const lines = document.querySelectorAll('#aiLog .ai-log-line');
+      const dots = Array.from(lines).map(l => l.querySelector('.dot'));
+      dots.forEach(d => { d.className = 'dot dot-pending'; });
+      const matchCard = document.getElementById('aiMatchCard');
+      const confFill = document.getElementById('confFill');
+      if (matchCard) matchCard.style.opacity = '0';
+      if (confFill) confFill.style.width = '0%';
+
+      lines.forEach((_, i) => {
+        setTimeout(() => {
+          if (i > 0 && dots[i - 1]) dots[i - 1].className = 'dot dot-done';
+          if (dots[i]) dots[i].className = 'dot dot-active';
+          if (i === lines.length - 1) {
+            setTimeout(() => {
+              if (dots[i]) dots[i].className = 'dot dot-done';
+              if (matchCard) matchCard.style.opacity = '1';
+              if (confFill) setTimeout(() => confFill.style.width = '94%', 120);
+              aiAnimRunning = false;
+            }, 600);
+          }
+        }, i * 380);
+      });
+    }
+
+    // ── CUSTOMIZE: Servings ──────────────────────────────────────
+    function updateServings(val) {
+      const b = parseInt(val);
+      document.getElementById('servVal').textContent = val;
+      document.getElementById('sPaneer').textContent = (b * 50) + 'g';
+      document.getElementById('sTomato').textContent = Math.ceil(b / 2) + ' pcs';
+      document.getElementById('sOnion').textContent = Math.ceil(b / 4) + (b <= 4 ? ' large' : ' pcs');
+      document.getElementById('sChilli').textContent = Math.ceil(b / 2) + ' pcs';
+    }
+    function toggleChip(el) { el.classList.toggle('sel'); }
+
+    // ── STEP 4: Save ─────────────────────────────────────────────
+    function simulateSave() {
+      const btn = event.currentTarget || event.target;
+      btn.textContent = '⏳ Saving…';
+      btn.disabled = true;
+      setTimeout(() => {
+        const succ = document.getElementById('saveSuccess');
+        if (succ) succ.classList.add('show');
+        btn.textContent = '✅ Saved!';
+      }, 1200);
+    }
+
+    // ── SIM PANEL: add ingredient ────────────────────────────────
+    const emojiMap = { onion: '🧅', tomato: '🍅', chilli: '🌶️', paneer: '🫛', garlic: '🧄', potato: '🥔', rice: '🍚', egg: '🥚', cheese: '🧀', carrot: '🥕', spinach: '🥬', ginger: '🫚', mushroom: '🍄', corn: '🌽' };
+    function simAddIngredient() {
+      const input = document.getElementById('simInput');
+      const val = input.value.trim();
+      if (!val) return;
+      const tags = document.getElementById('simTags');
+      const tag = document.createElement('div');
+      tag.className = 'sim-tag';
+      tag.innerHTML = `${emojiMap[val.toLowerCase()] || '🍽️'} ${val}`;
+      tags.appendChild(tag);
+      input.value = '';
+      input.focus();
+    }
+
+    // ═══ PHONE VOICE BUTTON ═══
+    let phoneVoiceListening = false;
+    function togglePhoneVoice() {
+      const btn = document.getElementById('phoneVoiceBtn');
+      if (phoneVoiceListening) {
+        phoneVoiceListening = false;
+        btn.classList.remove('listening');
+        return;
+      }
+      phoneVoiceListening = true;
+      btn.classList.add('listening');
+      setTimeout(function () {
+        phoneVoiceListening = false;
+        if (btn) btn.classList.remove('listening');
+        const ingRow = document.querySelector('.app-ing-row');
+        if (ingRow) {
+          const newIng = document.createElement('div');
+          newIng.className = 'app-ing';
+          newIng.textContent = '🧄 Garlic';
+          newIng.style.animation = 'tagPop 0.3s cubic-bezier(0.34,1.56,0.64,1)';
+          ingRow.appendChild(newIng);
+        }
+      }, 3000);
+    }
+
+    // ═══ PARTICLE SYSTEM ═══
+    (function () {
+      var container = document.getElementById('heroParticles');
+      if (!container) return;
+      var colors = ['rgba(232,93,38,0.5)', 'rgba(82,183,136,0.4)', 'rgba(255,160,100,0.4)', 'rgba(255,255,255,0.15)'];
+      for (var i = 0; i < 35; i++) {
+        var p = document.createElement('div');
+        p.className = 'particle' + (Math.random() > 0.5 ? ' glow' : '');
+        var size = Math.random() * 4 + 2;
+        p.style.width = size + 'px';
+        p.style.height = size + 'px';
+        p.style.left = (Math.random() * 100) + '%';
+        p.style.bottom = (-Math.random() * 20) + '%';
+        p.style.color = colors[Math.floor(Math.random() * colors.length)];
+        p.style.background = 'currentColor';
+        p.style.animationDuration = (Math.random() * 8 + 6) + 's';
+        p.style.animationDelay = (Math.random() * 10) + 's';
+        container.appendChild(p);
+      }
+    })();
+
+    // ═══ 3D TILT ON FEATURE CARDS ═══
+    document.querySelectorAll('.feature-card').forEach(function (card) {
+      card.addEventListener('mousemove', function (e) {
+        var rect = card.getBoundingClientRect();
+        var x = e.clientX - rect.left;
+        var y = e.clientY - rect.top;
+        var rotX = (y - rect.height / 2) / (rect.height / 2) * -8;
+        var rotY = (x - rect.width / 2) / (rect.width / 2) * 8;
+        card.style.transform = 'perspective(800px) rotateX(' + rotX + 'deg) rotateY(' + rotY + 'deg) translateY(-8px)';
+      });
+      card.addEventListener('mouseleave', function () { card.style.transform = ''; });
+    });
+
+    // ═══ PARALLAX GEO SHAPES ═══
+    document.addEventListener('mousemove', function (e) {
+      var mx = (e.clientX / window.innerWidth - 0.5) * 2;
+      var my = (e.clientY / window.innerHeight - 0.5) * 2;
+      document.querySelectorAll('.geo-shape').forEach(function (shape, i) {
+        var speed = (i + 1) * 6;
+        shape.style.transform = 'translate(' + (mx * speed) + 'px, ' + (my * speed) + 'px)';
+      });
+    });
+
+    // ═══ 3D HERO TORUS KNOT (Canvas 2D) ═══
+    (function () {
+      var canvas = document.getElementById('hero3dCanvas');
+      if (!canvas) return;
+      var ctx = canvas.getContext('2d');
+      var w, h, time = 0, running = false;
+
+      function resize() {
+        var hero = document.querySelector('.hero');
+        w = canvas.width = hero.offsetWidth;
+        h = canvas.height = hero.offsetHeight;
+      }
+      resize();
+      window.addEventListener('resize', resize);
+
+      function project(x, y, z) {
+        var fov = 600, scale = fov / (fov + z);
+        return { x: x * scale + w / 2, y: y * scale + h / 2, scale: scale };
+      }
+
+      function drawTorusKnot(t) {
+        ctx.clearRect(0, 0, w, h);
+        var points = [];
+        for (var i = 0; i <= 200; i++) {
+          var u = (i / 200) * Math.PI * 4;
+          var cu = Math.cos(u), su = Math.sin(u);
+          var quP = u * 1.5;
+          var x3 = (150 + 60 * Math.cos(quP)) * cu;
+          var y3 = (150 + 60 * Math.cos(quP)) * su;
+          var z3 = 60 * Math.sin(quP);
+          var cosT = Math.cos(t * 0.3), sinT = Math.sin(t * 0.3);
+          var cosT2 = Math.cos(t * 0.2), sinT2 = Math.sin(t * 0.2);
+          var rx = x3 * cosT - z3 * sinT;
+          var rz = x3 * sinT + z3 * cosT;
+          var ry = y3 * cosT2 - rz * sinT2;
+          var rz2 = y3 * sinT2 + rz * cosT2;
+          points.push(project(rx, ry, rz2 + 400));
+        }
+        ctx.beginPath();
+        for (var j = 0; j < points.length; j++) {
+          if (j === 0) ctx.moveTo(points[j].x, points[j].y);
+          else ctx.lineTo(points[j].x, points[j].y);
+        }
+        ctx.strokeStyle = 'rgba(232,93,38,0.06)';
+        ctx.lineWidth = 1.5;
+        ctx.stroke();
+        for (var k = 0; k < points.length; k++) {
+          if (k % 5 === 0) {
+            ctx.beginPath();
+            ctx.arc(points[k].x, points[k].y, points[k].scale * 2, 0, Math.PI * 2);
+            ctx.fillStyle = 'rgba(232,93,38,' + (0.06 + points[k].scale * 0.07) + ')';
+            ctx.fill();
+          }
+        }
+      }
+
+      function animate() {
+        if (!running) return;
+        time += 0.005;
+        drawTorusKnot(time);
+        requestAnimationFrame(animate);
+      }
+
+      var heroObs = new IntersectionObserver(function (entries) {
+        entries.forEach(function (e) {
+          running = e.isIntersecting;
+          if (running) animate();
+        });
+      }, { threshold: 0.1 });
+      heroObs.observe(document.querySelector('.hero'));
+    })();
+
+  </script>
+</body>
+
+</html>

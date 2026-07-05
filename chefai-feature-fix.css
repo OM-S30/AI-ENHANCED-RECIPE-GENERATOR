@@ -1,0 +1,98 @@
+/*
+  ╔══════════════════════════════════════════════════════╗
+  ║  ChefAI — Feature Card Hover Fix                     ║
+  ║  Removes the ugly rotating orange triangle           ║
+  ║  Replaces with elegant ambient glow + accent line    ║
+  ╚══════════════════════════════════════════════════════╝
+
+  HOW TO USE:
+  In index.html, add this AFTER your existing <style> block (or link it):
+  <link rel="stylesheet" href="chefai-feature-fix.css">
+*/
+
+/* ── Kill the rotating conic-gradient triangle ─────────── */
+@property --angle {
+    syntax: '<angle>';
+    initial-value: 0deg;
+    inherits: false;
+}
+
+/* Override: disable the rotating border entirely */
+.glow-border::before {
+    display: none !important;
+    content: none !important;
+    animation: none !important;
+    opacity: 0 !important;
+}
+
+/* ── Enhanced Feature Card Hover ─────────────────────────
+   Elegant lift + ambient warm glow + smooth accent line  
+   ───────────────────────────────────────────────────── */
+.feature-card {
+    transition:
+        opacity 0.6s cubic-bezier(0.16, 1, 0.3, 1),
+        transform 0.6s cubic-bezier(0.16, 1, 0.3, 1),
+        box-shadow 0.45s cubic-bezier(0.16, 1, 0.3, 1),
+        border-color 0.35s ease !important;
+}
+
+.feature-card:hover {
+    transform: translateY(-10px) !important;
+    box-shadow:
+        0 2px 4px rgba(90, 50, 20, 0.04),
+        0 8px 24px rgba(90, 50, 20, 0.08),
+        0 24px 60px rgba(90, 50, 20, 0.12),
+        0 0 0 1px rgba(232, 93, 38, 0.16),
+        0 0 60px rgba(232, 93, 38, 0.08) !important;
+    border-color: rgba(232, 93, 38, 0.2) !important;
+}
+
+/* Replace ugly after-triangle with smooth centered accent line */
+.feature-card::after {
+    content: '' !important;
+    position: absolute !important;
+    top: 0 !important;
+    left: 50% !important;
+    width: 0% !important;
+    height: 2px !important;
+    background: linear-gradient(90deg,
+            transparent 0%,
+            var(--orange-light, #f47a4a) 30%,
+            var(--orange, #e85d26) 50%,
+            var(--orange-light, #f47a4a) 70%,
+            transparent 100%) !important;
+    transform: translateX(-50%) !important;
+    border-radius: 0 0 2px 2px !important;
+    opacity: 0 !important;
+    transition:
+        width 0.5s cubic-bezier(0.34, 1.56, 0.64, 1),
+        opacity 0.35s ease !important;
+    animation: none !important;
+    right: auto !important;
+}
+
+.feature-card:hover::after {
+    width: 75% !important;
+    opacity: 1 !important;
+}
+
+/* Icon bounce on hover */
+.feature-card:hover .feature-icon {
+    transform: translateY(-4px) scale(1.12) rotate(-6deg) !important;
+    transition: transform 0.45s cubic-bezier(0.34, 1.56, 0.64, 1) !important;
+}
+
+/* Subtle background warmth on hover */
+.feature-card:hover {
+    background: linear-gradient(135deg,
+            rgba(255, 252, 248, 1) 0%,
+            rgba(255, 248, 242, 0.98) 100%) !important;
+}
+
+/* Feature tag lifts on hover */
+.feature-card:hover .feature-tag {
+    background: rgba(232, 93, 38, 0.12) !important;
+    transform: translateY(-1px) !important;
+    transition: all 0.3s ease !important;
+    display: inline-block !important;
+}
